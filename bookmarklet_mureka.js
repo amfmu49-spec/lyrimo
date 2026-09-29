@@ -233,7 +233,7 @@
 
     let textarea = document.createElement("textarea");
     textarea.value = getFormattedText();
-    textarea.readOnly = true;
+    textarea.readOnly = false;
     Object.assign(textarea.style, {
       width: "100%",
       height: "220px",
@@ -270,7 +270,7 @@
       cursor: "pointer"
     });
     copyBtn.onclick = async () => {
-      await navigator.clipboard.writeText(getFormattedText());
+      await navigator.clipboard.writeText(textarea.value);
       copyBtn.textContent = "✅ コピー完了!";
       setTimeout(() => copyBtn.textContent = "📋 コピー", 2000);
     };
@@ -290,7 +290,7 @@
       cursor: "pointer"
     });
     dlBtn.onclick = () => {
-      let blob = new Blob([getFormattedText()], { type: "text/plain" });
+      let blob = new Blob([textarea.value], { type: "text/plain" });
       let url = URL.createObjectURL(blob);
       let a = document.createElement("a");
       a.href = url;
@@ -320,7 +320,7 @@
       boxSizing: "border-box"
     });
     openBtn.onclick = () => {
-      let lyrimoUrl = `https://amfmu49-spec.github.io/lyrimo/#lrc=${encodeURIComponent(getFormattedText())}&audio_url=${encodeURIComponent(audioUrl)}`;
+      let lyrimoUrl = `https://amfmu49-spec.github.io/lyrimo/#lrc=${encodeURIComponent(textarea.value)}&audio_url=${encodeURIComponent(audioUrl)}`;
       openBtn.href = lyrimoUrl;
     };
 
