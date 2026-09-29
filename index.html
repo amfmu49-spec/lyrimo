@@ -143,7 +143,7 @@ body {
   background: #000;
   border-radius: 8px;
   overflow: hidden;
-  aspect-ratio: 9/16; /* Fallback for visual, JS handles actual sizing */
+  aspect-ratio: 9/16; /* always portrait container */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,6 +152,7 @@ body {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  display: block;
 }
 .overlay-msg {
   position: absolute;
@@ -29530,7 +29531,12 @@ function sizeViewport() {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
   if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
-  c.style.width = cssW + 'px'; c.style.height = cssH + 'px';
+  
+  // No longer forcefully setting inline style width/height 
+  // Let the CSS flexbox and aspect-ratio handle the container size.
+  // We just let the canvas fit naturally within the .viewport container
+  c.style.width = '100%';
+  c.style.height = '100%';
   S.need = true;
 }
 function draw() {

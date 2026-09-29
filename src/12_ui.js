@@ -155,7 +155,12 @@ function sizeViewport() {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const pw = Math.round(Math.min(S.plan.W, cssW * dpr)), ph = Math.round(pw / ar);
   if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
-  c.style.width = cssW + 'px'; c.style.height = cssH + 'px';
+  
+  // No longer forcefully setting inline style width/height 
+  // Let the CSS flexbox and aspect-ratio handle the container size.
+  // We just let the canvas fit naturally within the .viewport container
+  c.style.width = '100%';
+  c.style.height = '100%';
   S.need = true;
 }
 function draw() {
