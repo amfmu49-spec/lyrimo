@@ -441,15 +441,174 @@ function updateHist() {
   $('histPos').textContent = H.list.length > 1 ? `${H.i + 1} / ${H.list.length}` : '';
 }
 
-/* ---------------- おまかせ ---------------- */
+/* ---------------- おまかせ & ジャンル別プリセット ---------------- */
+let currentGenre = 'auto';
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+const GENRE_PRESETS = {
+  auto: {
+    name: 'おまかせ',
+    hint: '全ジャンルからランダム',
+    apply: () => J.omakase(S.project)
+  },
+  ballad: {
+    name: 'バラード',
+    hint: '明朝体 × 静かなフェード・ブラー演出',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = 'calm';
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['shippori', 'mincho_black', 'tokumin']),
+        serif: 'mincho_bold'
+      });
+      r.style = pickRandom(['paper', 'specimen', 'noir', 'mono']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.25 + Math.random() * 0.15).toFixed(2),
+        glitch: 0.05,
+        chroma: 0.2,
+        texture: 0.7
+      });
+      return r;
+    }
+  },
+  pop: {
+    name: 'ポップ',
+    hint: 'ポップ体/丸文字 × 弾むバウンス・明るい演出',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = 'pop';
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['pop', 'round', 'kiwi']),
+        serif: 'round'
+      });
+      r.style = pickRandom(['magenta', 'caution', 'transit', 'blueprint', 'rouge']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.8 + Math.random() * 0.15).toFixed(2),
+        glitch: 0.1,
+        decor: 0.85
+      });
+      return r;
+    }
+  },
+  rock: {
+    name: 'ロック',
+    hint: '極太ゴシック × 迫力スライド・画面の揺れ',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = pickRandom(['emotional', 'graphic']);
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['dela', 'zenkaku', 'gothic_black']),
+        serif: 'mincho_black'
+      });
+      r.style = pickRandom(['crimson', 'noir', 'blueprint', 'caution']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.75 + Math.random() * 0.15).toFixed(2),
+        glitch: 0.35,
+        chroma: 0.6
+      });
+      return r;
+    }
+  },
+  cyber: {
+    name: 'サイバー',
+    hint: '等幅/ピクセル文字 × グリッチ・電子的スライス',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = 'glitch';
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['dot', 'mono']),
+        serif: 'mono'
+      });
+      r.style = pickRandom(['hud', 'mint', 'noir', 'crimson']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.7 + Math.random() * 0.2).toFixed(2),
+        glitch: 0.85,
+        chroma: 0.8
+      });
+      return r;
+    }
+  },
+  chill: {
+    name: 'チル',
+    hint: 'モダンゴシック × 洗練されたタイポグラフィ',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = 'editorial';
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['sansui', 'gothic_med']),
+        serif: 'mincho'
+      });
+      r.style = pickRandom(['specimen', 'mono', 'paper', 'noir']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.35 + Math.random() * 0.15).toFixed(2),
+        glitch: 0.1,
+        chroma: 0.25
+      });
+      return r;
+    }
+  },
+  wa: {
+    name: '和風',
+    hint: '筆文字風 × 縦書き・和の情緒的演出',
+    apply: () => {
+      const r = J.omakase(S.project);
+      r.mood = pickRandom(['calm', 'emotional']);
+      r.fonts = Object.assign({}, r.fonts, {
+        display: pickRandom(['brush', 'tokumin', 'shippori']),
+        serif: 'brush'
+      });
+      r.style = pickRandom(['paper', 'crimson', 'noir']);
+      r.fx = Object.assign({}, r.fx, {
+        motion: +(0.4 + Math.random() * 0.2).toFixed(2),
+        decor: 0.7
+      });
+      return r;
+    }
+  }
+};
+
+function applyGenre(g) {
+  if (S.exporting || S.tap) return;
+  remember();
+  const preset = GENRE_PRESETS[g] || GENRE_PRESETS.auto;
+  const r = preset.apply();
+  Object.assign(S.project, r);
+  fontKey = ''; syncUI(); replan(); commit();
+  const genreLabel = g === 'auto' ? 'おまかせ' : preset.name;
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  restartPreview();
+}
+
+function initGenreSelector() {
+  const container = document.getElementById('genreList');
+  if (!container) return;
+  const hintEl = document.getElementById('genreHint');
+  container.querySelectorAll('.amuvi-genre-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.genre;
+      if (!GENRE_PRESETS[g]) return;
+      currentGenre = g;
+      container.querySelectorAll('.amuvi-genre-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (hintEl) hintEl.textContent = GENRE_PRESETS[g].hint;
+      applyGenre(g);
+    });
+  });
+}
+
 function restartPreview() { seek(0); if (!S.playing && S.mode === 'easy') play(); }
 function omakase() {
   if (S.exporting || S.tap) return;
   remember();
-  const r = J.omakase(S.project);
+  const preset = GENRE_PRESETS[currentGenre] || GENRE_PRESETS.auto;
+  const r = preset.apply();
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
-  toast(`おまかせ：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  const genreLabel = currentGenre === 'auto' ? 'おまかせ' : preset.name;
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -986,6 +1145,7 @@ function boot() {
   if (layer && S.bgImageUrl) layer.style.backgroundImage = `url('${S.bgImageUrl}')`;
   if (S.bgImageUrl) { window._bgImgObj = new Image(); window._bgImgObj.src = S.bgImageUrl; }
   bind(); initVolume(); syncUI(); replan();
+  initGenreSelector();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

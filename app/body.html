@@ -2,7 +2,7 @@
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.0.6</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.1.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
     </div>
@@ -118,6 +118,21 @@
     <section class="col col-right amuvi-controls" aria-label="スタイルと書き出し">
       <div id="easyPanel" class="easy amuvi-card">
         <div class="easy-hero amuvi-hero">
+          <div class="amuvi-genre-container">
+            <div class="amuvi-genre-header">
+              <span class="amuvi-genre-title">🎵 音楽ジャンル</span>
+              <span id="genreHint" class="amuvi-genre-desc">全ジャンルからランダム</span>
+            </div>
+            <div class="amuvi-genre-list" id="genreList">
+              <button type="button" class="amuvi-genre-chip active" data-genre="auto">🎲 おまかせ</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="ballad">🥀 バラード</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="pop">🎉 ポップ</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="rock">🎸 ロック</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="cyber">⚡ サイバー</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="chill">☕ チル</button>
+              <button type="button" class="amuvi-genre-chip" data-genre="wa">🌸 和風</button>
+            </div>
+          </div>
           <button id="btnOmakaseBig" class="omakase amuvi-omakase-btn">✨ AI おまかせ生成 ✨</button>
           <p class="hint amuvi-hint">ワンタップでデザイン・動き・配色を自動生成！</p>
           <div class="hist-row amuvi-hist-row">

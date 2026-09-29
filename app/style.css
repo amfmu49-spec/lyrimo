@@ -264,3 +264,58 @@ body {
 .amuvi-exp-cancel {
   background: none; border: none; color: red; font-size: 12px; cursor: pointer;
 }
+
+/* Genre Selector */
+.amuvi-genre-container {
+  margin-bottom: 14px;
+}
+.amuvi-genre-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.amuvi-genre-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.amuvi-genre-desc {
+  font-size: 11px;
+  color: #6366f1;
+  font-weight: 600;
+}
+.amuvi-genre-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.amuvi-genre-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+.amuvi-genre-chip:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.amuvi-genre-chip.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+}
