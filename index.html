@@ -1662,6 +1662,7 @@ J.drawItem = (env, it) => {
   if (baseAlpha <= 0.002) return null;
   const col = ghostPass ? env.passColor : (it.color || '#fff');
   const sCol = ghostPass ? env.passColor : (it.strokeColor || it.color || '#fff');
+  const fill = it.fill !== false;
   let posX = it.x, posY = it.y;
   const avoid = env.avoid || (env.plan && env.plan.avoid);
   if (avoid && avoid.enabled && J.calcAvoidShift) {
@@ -4326,6 +4327,7 @@ class Renderer {
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
+      const cs = cam.s ?? 1;
       let avoidOffX = 0, avoidOffY = 0;
       const avoid = plan.avoid;
       if (avoid && avoid.enabled) {
@@ -31035,9 +31037,13 @@ function syncOut() {
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
-  $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  const el = $('codecNote');
+  if (el) el.textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
+  if ($('btnMP4')) $('btnMP4').disabled = !vc;
+  if ($('eMP4')) {
+    $('eMP4').disabled = !vc;
+    if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  }
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {

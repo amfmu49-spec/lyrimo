@@ -122,6 +122,7 @@ J.drawItem = (env, it) => {
   if (baseAlpha <= 0.002) return null;
   const col = ghostPass ? env.passColor : (it.color || '#fff');
   const sCol = ghostPass ? env.passColor : (it.strokeColor || it.color || '#fff');
+  const fill = it.fill !== false;
   let posX = it.x, posY = it.y;
   const avoid = env.avoid || (env.plan && env.plan.avoid);
   if (avoid && avoid.enabled && J.calcAvoidShift) {

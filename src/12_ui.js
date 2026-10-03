@@ -1082,9 +1082,13 @@ function syncOut() {
 async function codecNote() {
   const [w, h] = J.outputSize(S.project);
   const vc = await J.pickVideoCodec(w, h, S.project.fps, 12e6);
-  $('codecNote').textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
-  $('btnMP4').disabled = !vc; $('eMP4').disabled = !vc;
-  if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  const el = $('codecNote');
+  if (el) el.textContent = vc ? `このブラウザでは ${vc.label} で書き出します（${w}×${h} / ${S.project.fps}fps）。書き出し中はタブを開いたままにしてください。` : 'このブラウザは動画エンコード（WebCodecs）に対応していません。Chrome / Edge の最新版で開くか、連番PNGを使ってください。';
+  if ($('btnMP4')) $('btnMP4').disabled = !vc;
+  if ($('eMP4')) {
+    $('eMP4').disabled = !vc;
+    if (!vc) $('eMP4').title = 'このブラウザは MP4 書き出しに対応していません（Chrome / Edge 推奨）';
+  }
 }
 const EXP_BTNS = ['btnMP4', 'btnPNG', 'btnPNGA', 'btnPNGL', 'eMP4'];
 function baseName() {

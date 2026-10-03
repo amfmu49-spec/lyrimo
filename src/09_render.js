@@ -166,6 +166,7 @@ class Renderer {
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
+      const cs = cam.s ?? 1;
       let avoidOffX = 0, avoidOffY = 0;
       const avoid = plan.avoid;
       if (avoid && avoid.enabled) {
