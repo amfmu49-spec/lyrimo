@@ -621,6 +621,141 @@ function initColorToneSelector() {
   });
 }
 
+/* ---------------- avoid area (character face avoidance) ---------------- */
+let avoidModeActive = false;
+
+function updateAvoidMarkerUI() {
+  const marker = document.getElementById('avoidMarker');
+  const circle = document.getElementById('avoidCircle');
+  const vp = document.getElementById('viewport');
+  const btn = document.getElementById('btnAvoid');
+  const guide = document.getElementById('avoidGuide');
+  if (!marker || !vp || !circle) return;
+
+  const avoid = S.project.avoid || (S.project.avoid = { enabled: false, x: 0.5, y: 0.4, r: 0.2 });
+  if (btn) {
+    btn.setAttribute('aria-pressed', String(!!avoid.enabled || avoidModeActive));
+    if (avoid.enabled || avoidModeActive) btn.classList.add('active'); else btn.classList.remove('active');
+  }
+
+  if (guide) {
+    guide.style.display = avoidModeActive ? 'block' : 'none';
+  }
+
+  if (!avoid.enabled && !avoidModeActive) {
+    marker.style.display = 'none';
+    return;
+  }
+
+  marker.style.display = 'block';
+  marker.style.left = `${(avoid.x * 100).toFixed(2)}%`;
+  marker.style.top = `${(avoid.y * 100).toFixed(2)}%`;
+
+  const vpW = vp.clientWidth, vpH = vp.clientHeight;
+  const diam = Math.round(Math.min(vpW, vpH) * (avoid.r || 0.2) * 2);
+  circle.style.width = `${diam}px`;
+  circle.style.height = `${diam}px`;
+
+  // update size buttons
+  const r = avoid.r || 0.2;
+  const sBtn = document.getElementById('btnAvoidSizeS');
+  const mBtn = document.getElementById('btnAvoidSizeM');
+  const lBtn = document.getElementById('btnAvoidSizeL');
+  if (sBtn) sBtn.classList.toggle('active', r <= 0.16);
+  if (mBtn) mBtn.classList.toggle('active', r > 0.16 && r < 0.26);
+  if (lBtn) lBtn.classList.toggle('active', r >= 0.26);
+}
+
+function initAvoidArea() {
+  const vp = document.getElementById('viewport');
+  const marker = document.getElementById('avoidMarker');
+  const btnAvoid = document.getElementById('btnAvoid');
+  if (!vp || !marker || !btnAvoid) return;
+
+  btnAvoid.addEventListener('click', () => {
+    avoidModeActive = !avoidModeActive;
+    if (avoidModeActive) {
+      if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.38, r: 0.2 };
+      else S.project.avoid.enabled = true;
+      replan(); commit(); S.need = true; draw();
+      toast('🎯 画面をタップして避けたい位置（キャラの顔など）を指定してください');
+    }
+    updateAvoidMarkerUI();
+  });
+
+  // Tap viewport to place / move avoid area
+  vp.addEventListener('pointerdown', e => {
+    if (e.target.closest('#avoidMarker') || e.target.closest('.amuvi-avoid-controls')) return;
+    if (!avoidModeActive && !(S.project.avoid && S.project.avoid.enabled)) return;
+    const rect = vp.getBoundingClientRect();
+    const nx = J.clamp((e.clientX - rect.left) / rect.width, 0.08, 0.92);
+    const ny = J.clamp((e.clientY - rect.top) / rect.height, 0.08, 0.92);
+    if (!S.project.avoid) S.project.avoid = { enabled: true, x: nx, y: ny, r: 0.2 };
+    else { S.project.avoid.enabled = true; S.project.avoid.x = nx; S.project.avoid.y = ny; }
+    avoidModeActive = true;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast('🎯 回避位置を設定しました（文字がこの場所を避けます）');
+  });
+
+  // Drag marker
+  let dragging = false, dX0 = 0, dY0 = 0, origX = 0, origY = 0;
+  marker.addEventListener('pointerdown', e => {
+    if (e.target.closest('.amuvi-avoid-controls')) return;
+    e.stopPropagation(); e.preventDefault();
+    dragging = true;
+    dX0 = e.clientX; dY0 = e.clientY;
+    const avoid = S.project.avoid || (S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r: 0.2 });
+    origX = avoid.x; origY = avoid.y;
+    marker.setPointerCapture(e.pointerId);
+  });
+  marker.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = vp.getBoundingClientRect();
+    const dx = (e.clientX - dX0) / rect.width;
+    const dy = (e.clientY - dY0) / rect.height;
+    S.project.avoid.x = J.clamp(origX + dx, 0.08, 0.92);
+    S.project.avoid.y = J.clamp(origY + dy, 0.08, 0.92);
+    marker.style.left = `${(S.project.avoid.x * 100).toFixed(2)}%`;
+    marker.style.top = `${(S.project.avoid.y * 100).toFixed(2)}%`;
+    replanSoon(60);
+  });
+  const stopDrag = e => {
+    if (!dragging) return;
+    dragging = false;
+    marker.releasePointerCapture(e.pointerId);
+    replan(); commit(); S.need = true; draw();
+  };
+  marker.addEventListener('pointerup', stopDrag);
+  marker.addEventListener('pointercancel', stopDrag);
+
+  // Size buttons
+  const setSize = (r, label) => {
+    if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r };
+    else S.project.avoid.r = r;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast(`回避エリアサイズ：${label}`);
+  };
+  const sBtn = document.getElementById('btnAvoidSizeS');
+  const mBtn = document.getElementById('btnAvoidSizeM');
+  const lBtn = document.getElementById('btnAvoidSizeL');
+  const clrBtn = document.getElementById('btnAvoidClear');
+  if (sBtn) sBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.14, '小'); });
+  if (mBtn) mBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.22, '中'); });
+  if (lBtn) lBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.30, '大'); });
+  if (clrBtn) clrBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (S.project.avoid) S.project.avoid.enabled = false;
+    avoidModeActive = false;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast('回避エリアを解除しました');
+  });
+
+  window.addEventListener('resize', updateAvoidMarkerUI);
+}
+
 function initGenreSelector() {
   const container = document.getElementById('genreList');
   if (!container) return;
@@ -1011,6 +1146,7 @@ function syncUI() {
   if (cHint) {
     cHint.textContent = tone === 'auto' ? 'スタイルの標準配色' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
   }
+  updateAvoidMarkerUI();
 }
 
 /* ---------------- wiring ---------------- */
@@ -1240,6 +1376,7 @@ function boot() {
   bind(); initVolume(); syncUI(); replan();
   initGenreSelector();
   initColorToneSelector();
+  initAvoidArea();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

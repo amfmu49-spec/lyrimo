@@ -71,6 +71,8 @@ BODY = {
     '暖色系': 'Warm tones',
     '寒色系': 'Cool tones',
     'モノトーン': 'Monochrome',
+    '🎯 画面をタップして避けたい位置（キャラの顔など）を指定': '🎯 Tap screen to set avoid area (keep face clear)',
+    '画面をタップした位置を避けて文字を配置（キャラの顔除外）': 'Avoid tapped area (keep character face clear)',
     'スタイル次第': 'Auto (by style)', '常に表示': 'Always show', '表示しない': 'Hide',
     '同じシードなら同じ構成になります。行ごとの「再抽選」「ロック」は左の行リストから。': 'The same seed produces the same arrangement. Reroll or lock individual lines in the list on the left.',
     '手法を名前で絞り込み': 'Filter techniques by name',

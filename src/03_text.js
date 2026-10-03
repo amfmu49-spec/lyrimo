@@ -122,9 +122,14 @@ J.drawItem = (env, it) => {
   if (baseAlpha <= 0.002) return null;
   const col = ghostPass ? env.passColor : (it.color || '#fff');
   const sCol = ghostPass ? env.passColor : (it.strokeColor || it.color || '#fff');
-  const fill = it.fill !== false;
+  let posX = it.x, posY = it.y;
+  const avoid = env.avoid || (env.plan && env.plan.avoid);
+  if (avoid && avoid.enabled && J.calcAvoidShift) {
+    const [asx, asy] = J.calcAvoidShift(it.x, it.y, it.w || (size * (it.text ? it.text.length : 1) * 0.7), it.h || size, avoid, env.W, env.H);
+    posX += asx; posY += asy;
+  }
   ctx.save();
-  ctx.translate(it.x, it.y);
+  ctx.translate(posX, posY);
   if (it.rot) ctx.rotate(it.rot * J.DEG);
   if (it.skew) ctx.transform(1, 0, Math.tan(it.skew * J.DEG), 1, 0, 0);
   if (it.blend) ctx.globalCompositeOperation = it.blend;

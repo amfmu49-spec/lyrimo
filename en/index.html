@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.3.0 — Lyric Motion Video Maker</title>
+<title>LYRIMO v3.4.0 — Lyric Motion Video Maker</title>
 <meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.3.0 — Lyric Motion Video Maker">
+<meta property="og:title" content="LYRIMO v3.4.0 — Lyric Motion Video Maker">
 <meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta name="twitter:card" content="summary">
@@ -339,6 +339,95 @@ body {
   box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
 }
 
+/* Avoid Area Overlay */
+.amuvi-avoid-guide {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(236, 72, 153, 0.6);
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: pulseGuide 2s infinite;
+}
+@keyframes pulseGuide {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.65; }
+}
+.amuvi-avoid-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+}
+.amuvi-avoid-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dashed #ec4899;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(168, 85, 247, 0.16) 70%, transparent 100%);
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.45), inset 0 0 12px rgba(236, 72, 153, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.15s, height 0.15s;
+}
+.amuvi-avoid-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+.amuvi-avoid-controls {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.92);
+  padding: 3px 6px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  border: 1px solid #334155;
+  white-space: nowrap;
+}
+.amuvi-avoid-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.amuvi-avoid-btn:hover {
+  background: #334155;
+  color: #fff;
+}
+.amuvi-avoid-btn.active {
+  background: #ec4899;
+  color: #fff;
+  border-color: #ec4899;
+}
+.amuvi-avoid-btn.clear {
+  color: #f87171;
+}
+.amuvi-avoid-btn.clear:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
 </style>
 </head>
 <body>
@@ -346,7 +435,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.3.0</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="license情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -437,6 +526,18 @@ body {
           <div id="viewMsg" class="overlay-msg" hidden></div>
           <div id="keyBadge" class="key-badge" hidden></div>
           <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+          <div id="avoidGuide" class="amuvi-avoid-guide" style="display:none;">🎯 Tap screen to set avoid area (keep face clear)</div>
+          <div id="avoidMarker" class="amuvi-avoid-marker" style="display:none;">
+            <div id="avoidCircle" class="amuvi-avoid-circle">
+              <span class="amuvi-avoid-icon">🎯</span>
+            </div>
+            <div class="amuvi-avoid-controls">
+              <button type="button" id="btnAvoidSizeS" class="amuvi-avoid-btn" title="小さめ">小</button>
+              <button type="button" id="btnAvoidSizeM" class="amuvi-avoid-btn active" title="Standard">中</button>
+              <button type="button" id="btnAvoidSizeL" class="amuvi-avoid-btn" title="大きめ">大</button>
+              <button type="button" id="btnAvoidClear" class="amuvi-avoid-btn clear" title="解除">✕</button>
+            </div>
+          </div>
         </div>
         <div class="transport amuvi-transport">
           <button id="btnPlay" class="play amuvi-icon-btn" aria-label="Play">▶</button>
@@ -445,6 +546,7 @@ body {
           <span id="timeDur" class="tc muted">00:00.00</span>
           <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="Playback position" class="amuvi-slider">
           <button id="btnLoop" class="amuvi-icon-btn ghost small" aria-pressed="true">🔁</button>
+          <button id="btnAvoid" class="amuvi-icon-btn ghost small" aria-pressed="false" title="Avoid tapped area (keep character face clear)">🎯</button>
           <span class="vol" style="display:none;">
             <button id="btnMute"></button>
             <input id="vol" type="range">
@@ -891,6 +993,32 @@ J.fmtTime = (t, fps) => {
   t = Math.max(0, t);
   const m = Math.floor(t / 60), s = Math.floor(t % 60), f = Math.floor((t % 1) * (fps || 100));
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${fps ? ':' + String(f).padStart(2, '0') : '.' + String(f).padStart(2, '0')}`;
+};
+
+/* calculate shift for an item to avoid the designated safe circle (e.g. character's face) */
+J.calcAvoidShift = (x, y, w, h, avoid, W, H) => {
+  if (!avoid || !avoid.enabled) return [0, 0];
+  const ax = avoid.x * W, ay = avoid.y * H;
+  const ar = Math.min(W, H) * (avoid.r || 0.2);
+  const re = ar + Math.max(w || 0, h || 0) * 0.48 + Math.min(W, H) * 0.04;
+  let dx = x - ax, dy = y - ay;
+  let dist = Math.hypot(dx, dy);
+  if (dist >= re) return [0, 0];
+  if (dist < 1e-3) {
+    const topSpace = ay, btmSpace = H - ay;
+    dy = btmSpace >= topSpace ? 1 : -1;
+    dx = 0; dist = 1;
+  }
+  const push = re - dist;
+  const ux = dx / dist, uy = dy / dist;
+  let sx = ux * push, sy = uy * push;
+  const marginX = W * 0.06, marginY = H * 0.06;
+  if (y + sy > H - marginY && uy > 0) {
+    sy = -(ay - (y - re));
+  } else if (y + sy < marginY && uy < 0) {
+    sy = (ay + re) - y;
+  }
+  return [sx, sy];
 };
 
 /* ============================================================
@@ -1424,9 +1552,14 @@ J.drawItem = (env, it) => {
   if (baseAlpha <= 0.002) return null;
   const col = ghostPass ? env.passColor : (it.color || '#fff');
   const sCol = ghostPass ? env.passColor : (it.strokeColor || it.color || '#fff');
-  const fill = it.fill !== false;
+  let posX = it.x, posY = it.y;
+  const avoid = env.avoid || (env.plan && env.plan.avoid);
+  if (avoid && avoid.enabled && J.calcAvoidShift) {
+    const [asx, asy] = J.calcAvoidShift(it.x, it.y, it.w || (size * (it.text ? it.text.length : 1) * 0.7), it.h || size, avoid, env.W, env.H);
+    posX += asx; posY += asy;
+  }
   ctx.save();
-  ctx.translate(it.x, it.y);
+  ctx.translate(posX, posY);
   if (it.rot) ctx.rotate(it.rot * J.DEG);
   if (it.skew) ctx.transform(1, 0, Math.tan(it.skew * J.DEG), 1, 0, 0);
   if (it.blend) ctx.globalCompositeOperation = it.blend;
@@ -3300,6 +3433,7 @@ J.defaultProject = () => ({
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
   colorTone: 'auto',
+  avoid: { enabled: false, x: 0.5, y: 0.4, r: 0.2 },
   colors: { enabled: false },
   fonts: {},
 });
@@ -3502,6 +3636,7 @@ J.plan = (project, audio) => {
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
+    avoid: project.avoid ? Object.assign({}, project.avoid) : { enabled: false },
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
@@ -4078,8 +4213,25 @@ class Renderer {
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
-      const cs = cam.s ?? 1;
-      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
+      let avoidOffX = 0, avoidOffY = 0;
+      const avoid = plan.avoid;
+      if (avoid && avoid.enabled) {
+        const ax = avoid.x * W, ay = avoid.y * H;
+        const ar = Math.min(W, H) * (avoid.r || 0.2);
+        const distFromCenter = Math.hypot(W / 2 - ax, H / 2 - ay);
+        if (distFromCenter < ar * 1.6) {
+          const topSpace = ay - ar, btmSpace = H - (ay + ar);
+          if (btmSpace >= topSpace && btmSpace > H * 0.22) {
+            avoidOffY = (ay + ar + H * 0.08) - H / 2;
+          } else if (topSpace > H * 0.22) {
+            avoidOffY = (ay - ar - H * 0.08) - H / 2;
+          } else {
+            const leftSpace = ax - ar, rightSpace = W - (ax + ar);
+            avoidOffX = rightSpace >= leftSpace ? (ax + ar + W * 0.08) - W / 2 : (ax - ar - W * 0.08) - W / 2;
+          }
+        }
+      }
+      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0) + avoidOffX, H / 2 + shy + P.off[1] + (cam.y || 0) + avoidOffY);
       if (cam.rot) X.rotate(cam.rot * J.DEG);
       if (cam.skx) X.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
       X.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); X.translate(-W / 2, -H / 2);
@@ -4146,7 +4298,7 @@ class Renderer {
 
   makeEnv(ctx, plan, cut, sc, o) {
     const W = plan.W, H = plan.H;
-    const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan }, o);
+    const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan, avoid: plan.avoid }, o);
     if (cut) {
       env.pIn = J.clamp(o.lt / Math.max(0.01, cut.inDur));
       env.pOut = cut.outDur > 0 ? J.clamp((o.lt - (cut.dur - cut.outDur)) / cut.outDur) : 0;
@@ -30370,6 +30522,141 @@ function initColorToneSelector() {
   });
 }
 
+/* ---------------- avoid area (character face avoidance) ---------------- */
+let avoidModeActive = false;
+
+function updateAvoidMarkerUI() {
+  const marker = document.getElementById('avoidMarker');
+  const circle = document.getElementById('avoidCircle');
+  const vp = document.getElementById('viewport');
+  const btn = document.getElementById('btnAvoid');
+  const guide = document.getElementById('avoidGuide');
+  if (!marker || !vp || !circle) return;
+
+  const avoid = S.project.avoid || (S.project.avoid = { enabled: false, x: 0.5, y: 0.4, r: 0.2 });
+  if (btn) {
+    btn.setAttribute('aria-pressed', String(!!avoid.enabled || avoidModeActive));
+    if (avoid.enabled || avoidModeActive) btn.classList.add('active'); else btn.classList.remove('active');
+  }
+
+  if (guide) {
+    guide.style.display = avoidModeActive ? 'block' : 'none';
+  }
+
+  if (!avoid.enabled && !avoidModeActive) {
+    marker.style.display = 'none';
+    return;
+  }
+
+  marker.style.display = 'block';
+  marker.style.left = `${(avoid.x * 100).toFixed(2)}%`;
+  marker.style.top = `${(avoid.y * 100).toFixed(2)}%`;
+
+  const vpW = vp.clientWidth, vpH = vp.clientHeight;
+  const diam = Math.round(Math.min(vpW, vpH) * (avoid.r || 0.2) * 2);
+  circle.style.width = `${diam}px`;
+  circle.style.height = `${diam}px`;
+
+  // update size buttons
+  const r = avoid.r || 0.2;
+  const sBtn = document.getElementById('btnAvoidSizeS');
+  const mBtn = document.getElementById('btnAvoidSizeM');
+  const lBtn = document.getElementById('btnAvoidSizeL');
+  if (sBtn) sBtn.classList.toggle('active', r <= 0.16);
+  if (mBtn) mBtn.classList.toggle('active', r > 0.16 && r < 0.26);
+  if (lBtn) lBtn.classList.toggle('active', r >= 0.26);
+}
+
+function initAvoidArea() {
+  const vp = document.getElementById('viewport');
+  const marker = document.getElementById('avoidMarker');
+  const btnAvoid = document.getElementById('btnAvoid');
+  if (!vp || !marker || !btnAvoid) return;
+
+  btnAvoid.addEventListener('click', () => {
+    avoidModeActive = !avoidModeActive;
+    if (avoidModeActive) {
+      if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.38, r: 0.2 };
+      else S.project.avoid.enabled = true;
+      replan(); commit(); S.need = true; draw();
+      toast('🎯 画面をタップして避けたい位置（キャラの顔など）を指定してください');
+    }
+    updateAvoidMarkerUI();
+  });
+
+  // Tap viewport to place / move avoid area
+  vp.addEventListener('pointerdown', e => {
+    if (e.target.closest('#avoidMarker') || e.target.closest('.amuvi-avoid-controls')) return;
+    if (!avoidModeActive && !(S.project.avoid && S.project.avoid.enabled)) return;
+    const rect = vp.getBoundingClientRect();
+    const nx = J.clamp((e.clientX - rect.left) / rect.width, 0.08, 0.92);
+    const ny = J.clamp((e.clientY - rect.top) / rect.height, 0.08, 0.92);
+    if (!S.project.avoid) S.project.avoid = { enabled: true, x: nx, y: ny, r: 0.2 };
+    else { S.project.avoid.enabled = true; S.project.avoid.x = nx; S.project.avoid.y = ny; }
+    avoidModeActive = true;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast('🎯 回避位置を設定しました（Textがこの場所を避けます）');
+  });
+
+  // Drag marker
+  let dragging = false, dX0 = 0, dY0 = 0, origX = 0, origY = 0;
+  marker.addEventListener('pointerdown', e => {
+    if (e.target.closest('.amuvi-avoid-controls')) return;
+    e.stopPropagation(); e.preventDefault();
+    dragging = true;
+    dX0 = e.clientX; dY0 = e.clientY;
+    const avoid = S.project.avoid || (S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r: 0.2 });
+    origX = avoid.x; origY = avoid.y;
+    marker.setPointerCapture(e.pointerId);
+  });
+  marker.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = vp.getBoundingClientRect();
+    const dx = (e.clientX - dX0) / rect.width;
+    const dy = (e.clientY - dY0) / rect.height;
+    S.project.avoid.x = J.clamp(origX + dx, 0.08, 0.92);
+    S.project.avoid.y = J.clamp(origY + dy, 0.08, 0.92);
+    marker.style.left = `${(S.project.avoid.x * 100).toFixed(2)}%`;
+    marker.style.top = `${(S.project.avoid.y * 100).toFixed(2)}%`;
+    replanSoon(60);
+  });
+  const stopDrag = e => {
+    if (!dragging) return;
+    dragging = false;
+    marker.releasePointerCapture(e.pointerId);
+    replan(); commit(); S.need = true; draw();
+  };
+  marker.addEventListener('pointerup', stopDrag);
+  marker.addEventListener('pointercancel', stopDrag);
+
+  // Size buttons
+  const setSize = (r, label) => {
+    if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r };
+    else S.project.avoid.r = r;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast(`回避エリアサイズ：${label}`);
+  };
+  const sBtn = document.getElementById('btnAvoidSizeS');
+  const mBtn = document.getElementById('btnAvoidSizeM');
+  const lBtn = document.getElementById('btnAvoidSizeL');
+  const clrBtn = document.getElementById('btnAvoidClear');
+  if (sBtn) sBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.14, '小'); });
+  if (mBtn) mBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.22, '中'); });
+  if (lBtn) lBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.30, '大'); });
+  if (clrBtn) clrBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (S.project.avoid) S.project.avoid.enabled = false;
+    avoidModeActive = false;
+    updateAvoidMarkerUI();
+    replan(); commit(); S.need = true; draw();
+    toast('回避エリアを解除しました');
+  });
+
+  window.addEventListener('resize', updateAvoidMarkerUI);
+}
+
 function initGenreSelector() {
   const container = document.getElementById('genreList');
   if (!container) return;
@@ -30760,6 +31047,7 @@ function syncUI() {
   if (cHint) {
     cHint.textContent = tone === 'auto' ? 'Styleの標準Palette' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
   }
+  updateAvoidMarkerUI();
 }
 
 /* ---------------- wiring ---------------- */
@@ -30989,6 +31277,7 @@ function boot() {
   bind(); initVolume(); syncUI(); replan();
   initGenreSelector();
   initColorToneSelector();
+  initAvoidArea();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

@@ -320,3 +320,92 @@ body {
   border-color: transparent;
   box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
 }
+
+/* Avoid Area Overlay */
+.amuvi-avoid-guide {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(236, 72, 153, 0.6);
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: pulseGuide 2s infinite;
+}
+@keyframes pulseGuide {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.65; }
+}
+.amuvi-avoid-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+}
+.amuvi-avoid-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dashed #ec4899;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, rgba(168, 85, 247, 0.16) 70%, transparent 100%);
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.45), inset 0 0 12px rgba(236, 72, 153, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.15s, height 0.15s;
+}
+.amuvi-avoid-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+.amuvi-avoid-controls {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.92);
+  padding: 3px 6px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  border: 1px solid #334155;
+  white-space: nowrap;
+}
+.amuvi-avoid-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.amuvi-avoid-btn:hover {
+  background: #334155;
+  color: #fff;
+}
+.amuvi-avoid-btn.active {
+  background: #ec4899;
+  color: #fff;
+  border-color: #ec4899;
+}
+.amuvi-avoid-btn.clear {
+  color: #f87171;
+}
+.amuvi-avoid-btn.clear:hover {
+  background: #ef4444;
+  color: #fff;
+}

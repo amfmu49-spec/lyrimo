@@ -183,3 +183,29 @@ J.fmtTime = (t, fps) => {
   const m = Math.floor(t / 60), s = Math.floor(t % 60), f = Math.floor((t % 1) * (fps || 100));
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${fps ? ':' + String(f).padStart(2, '0') : '.' + String(f).padStart(2, '0')}`;
 };
+
+/* calculate shift for an item to avoid the designated safe circle (e.g. character's face) */
+J.calcAvoidShift = (x, y, w, h, avoid, W, H) => {
+  if (!avoid || !avoid.enabled) return [0, 0];
+  const ax = avoid.x * W, ay = avoid.y * H;
+  const ar = Math.min(W, H) * (avoid.r || 0.2);
+  const re = ar + Math.max(w || 0, h || 0) * 0.48 + Math.min(W, H) * 0.04;
+  let dx = x - ax, dy = y - ay;
+  let dist = Math.hypot(dx, dy);
+  if (dist >= re) return [0, 0];
+  if (dist < 1e-3) {
+    const topSpace = ay, btmSpace = H - ay;
+    dy = btmSpace >= topSpace ? 1 : -1;
+    dx = 0; dist = 1;
+  }
+  const push = re - dist;
+  const ux = dx / dist, uy = dy / dist;
+  let sx = ux * push, sy = uy * push;
+  const marginX = W * 0.06, marginY = H * 0.06;
+  if (y + sy > H - marginY && uy > 0) {
+    sy = -(ay - (y - re));
+  } else if (y + sy < marginY && uy < 0) {
+    sy = (ay + re) - y;
+  }
+  return [sx, sy];
+};

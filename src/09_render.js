@@ -164,8 +164,25 @@ class Renderer {
       const CD = J.CAMERA[cut.cam] || J.CAMERA.push;
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
-      const cs = cam.s ?? 1;
-      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
+      let avoidOffX = 0, avoidOffY = 0;
+      const avoid = plan.avoid;
+      if (avoid && avoid.enabled) {
+        const ax = avoid.x * W, ay = avoid.y * H;
+        const ar = Math.min(W, H) * (avoid.r || 0.2);
+        const distFromCenter = Math.hypot(W / 2 - ax, H / 2 - ay);
+        if (distFromCenter < ar * 1.6) {
+          const topSpace = ay - ar, btmSpace = H - (ay + ar);
+          if (btmSpace >= topSpace && btmSpace > H * 0.22) {
+            avoidOffY = (ay + ar + H * 0.08) - H / 2;
+          } else if (topSpace > H * 0.22) {
+            avoidOffY = (ay - ar - H * 0.08) - H / 2;
+          } else {
+            const leftSpace = ax - ar, rightSpace = W - (ax + ar);
+            avoidOffX = rightSpace >= leftSpace ? (ax + ar + W * 0.08) - W / 2 : (ax - ar - W * 0.08) - W / 2;
+          }
+        }
+      }
+      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0) + avoidOffX, H / 2 + shy + P.off[1] + (cam.y || 0) + avoidOffY);
       if (cam.rot) X.rotate(cam.rot * J.DEG);
       if (cam.skx) X.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
       X.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); X.translate(-W / 2, -H / 2);
@@ -232,7 +249,7 @@ class Renderer {
 
   makeEnv(ctx, plan, cut, sc, o) {
     const W = plan.W, H = plan.H;
-    const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan }, o);
+    const env = Object.assign({ ctx, W, H, sc, st: plan.style, fx: plan.fx, fps: plan.fps, cut, plan, avoid: plan.avoid }, o);
     if (cut) {
       env.pIn = J.clamp(o.lt / Math.max(0.01, cut.inDur));
       env.pOut = cut.outDur > 0 ? J.clamp((o.lt - (cut.dur - cut.outDur)) / cut.outDur) : 0;
