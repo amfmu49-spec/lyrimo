@@ -2,7 +2,7 @@
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.0</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.1</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -112,8 +112,8 @@
           <span class="tc muted">/</span>
           <span id="timeDur" class="tc muted">00:00.00</span>
           <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置" class="amuvi-slider">
-          <button id="btnLoop" class="amuvi-icon-btn ghost small" aria-pressed="true">🔁</button>
           <button id="btnAvoid" class="amuvi-icon-btn ghost small" aria-pressed="false" title="画面をタップした位置を避けて文字を配置（キャラの顔除外）">🎯</button>
+          <button id="btnLoop" style="display:none;" aria-pressed="true" aria-hidden="true"></button>
           <span class="vol" style="display:none;">
             <button id="btnMute"></button>
             <input id="vol" type="range">

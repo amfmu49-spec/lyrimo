@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.4.0</title>
+<title>LYRIMO v3.4.1</title>
 <meta name="description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.4.0">
+<meta property="og:title" content="LYRIMO v3.4.1">
 <meta property="og:description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/">
 <meta name="twitter:card" content="summary">
@@ -168,25 +168,69 @@ body {
 .amuvi-transport {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .amuvi-icon-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   color: var(--c-text);
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background 0.15s, transform 0.1s, color 0.15s;
+}
+.amuvi-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.amuvi-icon-btn:active {
+  transform: scale(0.95);
+}
+
+#btnAvoid {
+  position: relative;
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+#btnAvoid:hover {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(236, 72, 153, 0.25);
+}
+#btnAvoid.active,
+#btnAvoid[aria-pressed="true"] {
+  background: rgba(236, 72, 153, 0.18);
+  color: #ec4899;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.35);
+  border-color: rgba(236, 72, 153, 0.5);
 }
 
 .amuvi-slider {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 40px;
   accent-color: var(--c-primary);
+  height: 20px;
 }
 .tc {
-  font-size: 12px;
+  font-size: 11px;
   font-family: monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Omakase and Export */
@@ -435,7 +479,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.0</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.1</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -545,8 +589,8 @@ body {
           <span class="tc muted">/</span>
           <span id="timeDur" class="tc muted">00:00.00</span>
           <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置" class="amuvi-slider">
-          <button id="btnLoop" class="amuvi-icon-btn ghost small" aria-pressed="true">🔁</button>
           <button id="btnAvoid" class="amuvi-icon-btn ghost small" aria-pressed="false" title="画面をタップした位置を避けて文字を配置（キャラの顔除外）">🎯</button>
+          <button id="btnLoop" style="display:none;" aria-pressed="true" aria-hidden="true"></button>
           <span class="vol" style="display:none;">
             <button id="btnMute"></button>
             <input id="vol" type="range">
@@ -30879,7 +30923,7 @@ function bind() {
   $('tapBtn').addEventListener('click', tapNow);
   $('tapStop').addEventListener('click', () => { pause(); stopTap(); });
   $('btnPlay').addEventListener('click', () => (S.playing ? pause() : play()));
-  $('btnLoop').addEventListener('click', e => { S.loop = !S.loop; e.target.setAttribute('aria-pressed', String(S.loop)); });
+  if ($('btnLoop')) $('btnLoop').addEventListener('click', e => { S.loop = !S.loop; e.target.setAttribute('aria-pressed', String(S.loop)); });
   $('btnShuffle').addEventListener('click', () => { remember(); S.project.seed = (Math.random() * 1e9) | 0; $('seed').value = S.project.seed; replan(); commit(); });
   const sc = $('scrub');
   sc.addEventListener('input', () => { S.scrubbing = true; seek(sc.value / 10000 * S.plan.duration); });
