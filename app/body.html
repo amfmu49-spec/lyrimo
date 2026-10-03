@@ -2,7 +2,7 @@
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.1</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.5.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -43,9 +43,29 @@
              <input id="bgImageFile" type="file" accept="image/*">
            </label>
         </div>
-        <div id="bgImageBar" style="display:none; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:#7c3aed; background:#f5f3ff; border-radius:6px; padding:6px 10px;">
-          <span>🖼 背景画像：</span><span id="bgImageName" style="font-weight:600; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
-          <button id="btnClearBg" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
+        <div id="bgImageBar" style="display:none; flex-direction:column; gap:6px; margin-top:6px; font-size:12px; color:#7c3aed; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:8px 12px;">
+          <div style="display:flex; align-items:center; gap:8px; width:100%;">
+            <span>🖼 背景：</span>
+            <span id="bgImageName" style="font-weight:600; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <button type="button" id="btnDetectChar" class="amuvi-char-detect-btn" title="AIでキャラを自動検出して切り抜き">🤖 キャラ検出</button>
+            <button type="button" id="btnClearBg" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
+          </div>
+          <div id="charDetectProgress" style="display:none; width:100%; flex-direction:column; gap:4px; margin-top:2px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#6d28d9;">
+              <span id="charDetectStatus">AIモデルを準備中…</span>
+              <span id="charDetectPercent">0%</span>
+            </div>
+            <div style="width:100%; height:4px; background:#e9d5ff; border-radius:2px; overflow:hidden;">
+              <div id="charDetectBar" style="width:0%; height:100%; background:linear-gradient(90deg, #8b5cf6, #ec4899); transition:width 0.15s;"></div>
+            </div>
+          </div>
+          <div id="charDepthControls" style="display:none; align-items:center; gap:6px; padding-top:6px; border-top:1px dashed #ddd6fe; flex-wrap:wrap;">
+            <span style="font-size:11px; font-weight:700; color:#4c1d95;">キャラ演出:</span>
+            <button type="button" class="amuvi-depth-chip" data-depth="behind" title="文字がキャラクターの後ろを通る立体表現">🎭 背後を回る</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="avoid" title="キャラクターの顔や体を避けて文字を自動配置">🎯 キャラを避ける</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="both" title="キャラを避けつつ背後にも通す">🌟 両方</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="off" title="通常表示（キャラ演出オフ）">オフ</button>
+          </div>
         </div>
         
         <div id="audioName" class="muted audio-name amuvi-audio-name" style="padding:4px 8px; border-radius:4px; background:#f1f5f9; display:inline-block; margin-bottom:8px; font-size:12px;">曲なし</div>

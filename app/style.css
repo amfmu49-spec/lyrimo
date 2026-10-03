@@ -453,3 +453,49 @@ body {
   background: #ef4444;
   color: #fff;
 }
+
+/* Character Depth & Segmentation */
+.amuvi-char-detect-btn {
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+  transition: transform 0.1s, opacity 0.15s;
+}
+.amuvi-char-detect-btn:hover {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+.amuvi-char-detect-btn:active {
+  transform: scale(0.98);
+}
+.amuvi-char-detect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.amuvi-depth-chip {
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  color: #5b21b6;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.amuvi-depth-chip:hover {
+  background: #ddd6fe;
+}
+.amuvi-depth-chip.active {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #6d28d9;
+  box-shadow: 0 2px 5px rgba(124, 58, 237, 0.35);
+}

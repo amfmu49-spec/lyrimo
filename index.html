@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.4.1</title>
+<title>LYRIMO v3.5.0</title>
 <meta name="description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.4.1">
+<meta property="og:title" content="LYRIMO v3.5.0">
 <meta property="og:description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/">
 <meta name="twitter:card" content="summary">
@@ -472,6 +472,52 @@ body {
   color: #fff;
 }
 
+/* Character Depth & Segmentation */
+.amuvi-char-detect-btn {
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+  transition: transform 0.1s, opacity 0.15s;
+}
+.amuvi-char-detect-btn:hover {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+.amuvi-char-detect-btn:active {
+  transform: scale(0.98);
+}
+.amuvi-char-detect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.amuvi-depth-chip {
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
+  color: #5b21b6;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.amuvi-depth-chip:hover {
+  background: #ddd6fe;
+}
+.amuvi-depth-chip.active {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #6d28d9;
+  box-shadow: 0 2px 5px rgba(124, 58, 237, 0.35);
+}
+
 </style>
 </head>
 <body>
@@ -479,7 +525,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.4.1</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.5.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -520,9 +566,29 @@ body {
              <input id="bgImageFile" type="file" accept="image/*">
            </label>
         </div>
-        <div id="bgImageBar" style="display:none; align-items:center; gap:8px; margin-top:4px; font-size:12px; color:#7c3aed; background:#f5f3ff; border-radius:6px; padding:6px 10px;">
-          <span>🖼 背景画像：</span><span id="bgImageName" style="font-weight:600; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
-          <button id="btnClearBg" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
+        <div id="bgImageBar" style="display:none; flex-direction:column; gap:6px; margin-top:6px; font-size:12px; color:#7c3aed; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:8px 12px;">
+          <div style="display:flex; align-items:center; gap:8px; width:100%;">
+            <span>🖼 背景：</span>
+            <span id="bgImageName" style="font-weight:600; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <button type="button" id="btnDetectChar" class="amuvi-char-detect-btn" title="AIでキャラを自動検出して切り抜き">🤖 キャラ検出</button>
+            <button type="button" id="btnClearBg" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
+          </div>
+          <div id="charDetectProgress" style="display:none; width:100%; flex-direction:column; gap:4px; margin-top:2px;">
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#6d28d9;">
+              <span id="charDetectStatus">AIモデルを準備中…</span>
+              <span id="charDetectPercent">0%</span>
+            </div>
+            <div style="width:100%; height:4px; background:#e9d5ff; border-radius:2px; overflow:hidden;">
+              <div id="charDetectBar" style="width:0%; height:100%; background:linear-gradient(90deg, #8b5cf6, #ec4899); transition:width 0.15s;"></div>
+            </div>
+          </div>
+          <div id="charDepthControls" style="display:none; align-items:center; gap:6px; padding-top:6px; border-top:1px dashed #ddd6fe; flex-wrap:wrap;">
+            <span style="font-size:11px; font-weight:700; color:#4c1d95;">キャラ演出:</span>
+            <button type="button" class="amuvi-depth-chip" data-depth="behind" title="文字がキャラクターの後ろを通る立体表現">🎭 背後を回る</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="avoid" title="キャラクターの顔や体を避けて文字を自動配置">🎯 キャラを避ける</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="both" title="キャラを避けつつ背後にも通す">🌟 両方</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="off" title="通常表示（キャラ演出オフ）">オフ</button>
+          </div>
         </div>
         
         <div id="audioName" class="muted audio-name amuvi-audio-name" style="padding:4px 8px; border-radius:4px; background:#f1f5f9; display:inline-block; margin-bottom:8px; font-size:12px;">曲なし</div>
@@ -3681,6 +3747,7 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     avoid: project.avoid ? Object.assign({}, project.avoid) : { enabled: false },
+    depth: ['behind', 'avoid', 'both'].includes(project.depth) ? project.depth : 'off',   // キャラ自動検出 (behind, avoid, both, off)
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
@@ -4170,7 +4237,9 @@ class Renderer {
     if (key && !opt.transparent) { ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H); }
     else if (!opt.transparent) {
       if (window._bgImgObj) {
-        ctx.drawImage(window._bgImgObj, 0, 0, W, H);
+        const img = window._bgImgObj;
+        const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+        ctx.drawImage(img, r.x, r.y, r.w, r.h);
       } else {
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
       }
@@ -4302,6 +4371,12 @@ class Renderer {
         catch (e) { console.warn('trans', mainCut.trans, e); }
         ctx.restore();
       }
+    }
+    // ---------- depth: character foreground layer (lyrics pass behind character) ----------
+    if ((plan.depth === 'behind' || plan.depth === 'both') && J.depth && J.depth.ready(window._bgImgObj) && layer !== 'back') {
+      const img = window._bgImgObj;
+      const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+      ctx.drawImage(J.depth.fg, r.x, r.y, r.w, r.h);
     }
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {
@@ -29711,6 +29786,172 @@ J.randomOk = (project, g, k) => {
 })();
 
 /* ============================================================
+   JIZURA — キャラ自動検出: anime-character segmentation of the background image
+   Runs fully in the browser (onnxruntime-web + skytnt/anime-seg ISNet). The image never leaves the device;
+   only the engine and the model are downloaded (the model is kept in the Cache Storage after the first time).
+   ============================================================ */
+(() => {
+'use strict';
+const ORT_DIR = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/';
+const ORT_URL = ORT_DIR + 'ort.webgpu.min.js';        // WebGPU + WASM in one bundle
+const MODEL_URL = 'https://huggingface.co/skytnt/anime-seg/resolve/main/isnetis.onnx';
+const MODEL_SIZE = 176069933;
+const CACHE_NAME = 'lyrimo-models-v1';
+const S = 1024;                                        // model input: 1x3x1024x1024, RGB 0..1, letterboxed with black
+
+/* cover-fit rect of an iw x ih image inside W x H (same as CSS background-size: cover, centred) */
+J.coverRect = (iw, ih, W, H) => {
+  const k = Math.max(W / Math.max(1, iw), H / Math.max(1, ih));
+  const w = iw * k, h = ih * k;
+  return { x: (W - w) / 2, y: (H - h) / 2, w, h };
+};
+
+const D = J.depth = { src: null, fg: null, box: null, busy: false, backend: null };
+let ortP = null, sess = null, sessBackend = null;
+
+function loadOrt() {
+  if (window.ort && window.ort.InferenceSession) return Promise.resolve(window.ort);
+  return ortP || (ortP = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = ORT_URL; s.crossOrigin = 'anonymous'; s.async = true;
+    s.onload = () => {
+      const ort = window.ort;
+      if (!ort || !ort.InferenceSession) { ortP = null; rej(new Error('AIエンジンを初期化できませんでした')); return; }
+      ort.env.wasm.wasmPaths = ORT_DIR;
+      ort.env.wasm.numThreads = self.crossOriginIsolated ? Math.min(4, navigator.hardwareConcurrency || 2) : 1;
+      res(ort);
+    };
+    s.onerror = () => { ortP = null; rej(new Error('AIエンジンを読み込めませんでした（ネット接続を確認してください）')); };
+    document.head.appendChild(s);
+  }));
+}
+
+async function fetchModel(onProgress) {
+  let cache = null;
+  try {
+    cache = await caches.open(CACHE_NAME);
+    const hit = await cache.match(MODEL_URL);
+    if (hit) { const b = new Uint8Array(await hit.arrayBuffer()); if (b.length > 1e6) { onProgress('model', 1); return b; } }
+  } catch (e) { cache = null; }
+  const r = await fetch(MODEL_URL, { mode: 'cors' });
+  if (!r.ok || !r.body) throw new Error(`AIモデルをダウンロードできませんでした（${r.status}）`);
+  const total = +r.headers.get('content-length') || MODEL_SIZE;
+  const reader = r.body.getReader(), chunks = []; let got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value); got += value.length;
+    onProgress('model', Math.min(0.999, got / total));
+  }
+  const buf = new Uint8Array(got); let o = 0;
+  for (const c of chunks) { buf.set(c, o); o += c.length; }
+  if (cache) { try { await cache.put(MODEL_URL, new Response(buf, { headers: { 'content-type': 'application/octet-stream' } })); } catch (e) { /* quota: just re-download next time */ } }
+  onProgress('model', 1);
+  return buf;
+}
+
+async function makeSession(ort, bytes, preferGpu) {
+  const opts = { graphOptimizationLevel: 'all' };
+  if (preferGpu && navigator.gpu) {
+    try { const s = await ort.InferenceSession.create(bytes, Object.assign({ executionProviders: ['webgpu'] }, opts)); sessBackend = 'WebGPU'; return s; }
+    catch (e) { console.warn('depth: WebGPU unavailable, falling back to WASM', e); }
+  }
+  const s = await ort.InferenceSession.create(bytes, Object.assign({ executionProviders: ['wasm'] }, opts));
+  sessBackend = 'WASM'; return s;
+}
+
+let modelBytes = null;
+async function getSession(onProgress) {
+  if (sess) return sess;
+  onProgress('engine', 0);
+  const ort = await loadOrt();
+  modelBytes = modelBytes || await fetchModel(onProgress);
+  onProgress('init', 0);
+  sess = await makeSession(ort, modelBytes, true);
+  return sess;
+}
+
+/* run the model on an <img>; builds D.fg (character cut-out, image resolution) and D.box (normalised to the image) */
+D.detect = async (img, onProgress = () => {}) => {
+  if (!img || !img.naturalWidth) throw new Error('背景画像がまだ読み込まれていません');
+  if (D.src === img.src && D.fg) return D;
+  if (D.busy) throw new Error('検出中です');
+  D.busy = true;
+  try {
+    const ort = await loadOrt();
+    let session = await getSession(onProgress);
+    onProgress('run', 0);
+    const w0 = img.naturalWidth, h0 = img.naturalHeight;
+    let w, h;
+    if (h0 > w0) { h = S; w = Math.max(1, Math.round(S * w0 / h0)); } else { w = S; h = Math.max(1, Math.round(S * h0 / w0)); }
+    const ox = (S - w) >> 1, oy = (S - h) >> 1;
+    const c = document.createElement('canvas'); c.width = S; c.height = S;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.fillStyle = '#000'; x.fillRect(0, 0, S, S);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(img, ox, oy, w, h);
+    const px = x.getImageData(0, 0, S, S).data, N = S * S;
+    const inp = new Float32Array(3 * N);
+    for (let i = 0, j = 0; i < N; i++, j += 4) { inp[i] = px[j] / 255; inp[N + i] = px[j + 1] / 255; inp[2 * N + i] = px[j + 2] / 255; }
+    const run = async s => { const out = await s.run({ [s.inputNames[0]]: new ort.Tensor('float32', inp, [1, 3, S, S]) }); return out[s.outputNames[0]].data; };
+    let m;
+    try { m = await run(session); }
+    catch (e) {
+      if (sessBackend !== 'WebGPU') throw e;
+      console.warn('depth: WebGPU run failed, retrying on WASM', e);
+      sess = await makeSession(ort, modelBytes, false); session = sess;
+      m = await run(session);
+    }
+    // mask → alpha (slight contrast curve tidies the soft halo around hair / outlines)
+    const mc = document.createElement('canvas'); mc.width = S; mc.height = S;
+    const mx = mc.getContext('2d'), md = mx.createImageData(S, S), a = md.data;
+    let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, count = 0;
+    for (let i = 0; i < N; i++) {
+      const v = m[i];
+      const al = v <= 0.12 ? 0 : v >= 0.88 ? 1 : (v - 0.12) / 0.76;
+      a[i * 4 + 3] = Math.round(al * 255);
+      if (v > 0.5) {
+        const X = i % S, Y = (i / S) | 0;
+        if (X >= ox && X < ox + w && Y >= oy && Y < oy + h) {
+          count++;
+          if (X < x0) x0 = X; if (X > x1) x1 = X; if (Y < y0) y0 = Y; if (Y > y1) y1 = Y;
+        }
+      }
+    }
+    mx.putImageData(md, 0, 0);
+    // cut-out at the image's own resolution
+    const fg = document.createElement('canvas'); fg.width = w0; fg.height = h0;
+    const fx = fg.getContext('2d');
+    fx.drawImage(img, 0, 0, w0, h0);
+    fx.globalCompositeOperation = 'destination-in';
+    fx.imageSmoothingQuality = 'high';
+    fx.drawImage(mc, ox, oy, w, h, 0, 0, w0, h0);
+    fx.globalCompositeOperation = 'source-over';
+    // bounding box + head estimate (the top quarter of the silhouette), all normalised to the image
+    let box = null;
+    if (count > N * 0.002) {
+      const bh = y1 - y0, top = y0 + bh * 0.25;
+      let sx = 0, n = 0, hx0 = 1e9, hx1 = -1;
+      for (let Y = y0; Y <= top; Y++) for (let X = x0; X <= x1; X++) {
+        if (m[Y * S + X] > 0.5) { sx += X; n++; if (X < hx0) hx0 = X; if (X > hx1) hx1 = X; }
+      }
+      const hx = n ? sx / n : (x0 + x1) / 2;
+      const hy = y0 + Math.min(bh * 0.14, (hx1 - hx0) * 0.55);
+      const hr = Math.max((hx1 - hx0) / 2, bh * 0.1);
+      const nx = X => (X - ox) / w, ny = Y => (Y - oy) / h;
+      box = { x0: nx(x0), y0: ny(y0), x1: nx(x1), y1: ny(y1), hx: nx(hx), hy: ny(hy), hr: hr / w, area: count / (w * h) };
+    }
+    D.src = img.src; D.fg = fg; D.box = box; D.backend = sessBackend;
+    onProgress('done', 1);
+    return D;
+  } finally { D.busy = false; }
+};
+
+D.clear = () => { D.src = null; D.fg = null; D.box = null; };
+D.ready = img => !!(img && D.fg && D.src === img.src);
+})();
+
+/* ============================================================
    JIZURA — editor UI
    ============================================================ */
 (() => {
@@ -30468,6 +30709,134 @@ function initAvoidArea() {
   window.addEventListener('resize', updateAvoidMarkerUI);
 }
 
+function updateDepthUI() {
+  const controls = document.getElementById('charDepthControls');
+  const btn = document.getElementById('btnDetectChar');
+  const img = window._bgImgObj;
+  const ready = J.depth && J.depth.ready(img);
+  if (!controls) return;
+  if (!ready) {
+    controls.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 キャラ検出'; }
+    return;
+  }
+  controls.style.display = 'flex';
+  if (btn) { btn.disabled = false; btn.textContent = '✓ 検出済み'; }
+  const currentDepth = S.project.depth || 'off';
+  controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.depth === currentDepth);
+  });
+}
+
+function initDepthControls() {
+  const btnDetect = document.getElementById('btnDetectChar');
+  const progressBox = document.getElementById('charDetectProgress');
+  const statusEl = document.getElementById('charDetectStatus');
+  const percentEl = document.getElementById('charDetectPercent');
+  const barEl = document.getElementById('charDetectBar');
+  const controls = document.getElementById('charDepthControls');
+
+  if (btnDetect) {
+    btnDetect.addEventListener('click', async () => {
+      const img = window._bgImgObj;
+      if (!img || !img.src) {
+        toast('先に背景画像を読み込んでください');
+        return;
+      }
+      if (J.depth && J.depth.busy) return;
+      btnDetect.disabled = true;
+      btnDetect.textContent = '検出中…';
+      if (progressBox) progressBox.style.display = 'flex';
+      if (controls) controls.style.display = 'none';
+
+      try {
+        await J.depth.detect(img, (phase, pct) => {
+          let text = '処理中…';
+          let pVal = Math.round(pct * 100);
+          if (phase === 'engine') text = 'AIエンジン準備中…';
+          else if (phase === 'model') text = `AIモデル取得中… ${pVal}%（初回のみ保存）`;
+          else if (phase === 'init') text = 'AI推論セッション初期化…';
+          else if (phase === 'run') { text = 'キャラクターを切り抜き中…'; pVal = 92; }
+          else if (phase === 'done') { text = '完了！'; pVal = 100; }
+          if (statusEl) statusEl.textContent = text;
+          if (percentEl) percentEl.textContent = `${pVal}%`;
+          if (barEl) barEl.style.width = `${pVal}%`;
+        });
+
+        if (progressBox) progressBox.style.display = 'none';
+        S.project.depth = 'both';
+
+        const box = J.depth.box;
+        if (box && S.plan) {
+          const W = S.plan.W, H = S.plan.H;
+          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+          const canX = (rect.x + box.hx * rect.w) / W;
+          const canY = (rect.y + box.hy * rect.h) / H;
+          const canR = (box.hr * rect.w) / Math.min(W, H);
+          S.project.avoid = {
+            enabled: true,
+            x: J.clamp(canX, 0.1, 0.9),
+            y: J.clamp(canY, 0.1, 0.9),
+            r: J.clamp(canR, 0.12, 0.32),
+            auto: true
+          };
+          updateAvoidMarkerUI();
+        }
+
+        updateDepthUI();
+        replan(); commit(); S.need = true; draw();
+        toast('🤖 キャラを検出しました！リリックが背後を通り、顔を避けます');
+      } catch (err) {
+        console.error('char detect err', err);
+        if (progressBox) progressBox.style.display = 'none';
+        btnDetect.disabled = false;
+        btnDetect.textContent = '🤖 キャラ検出';
+        toast(`検出エラー: ${err.message || err}`);
+      }
+    });
+  }
+
+  if (controls) {
+    controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const mode = chip.dataset.depth;
+        S.project.depth = mode;
+        const img = window._bgImgObj;
+        const box = J.depth && J.depth.box;
+
+        if ((mode === 'avoid' || mode === 'both') && box && S.plan && img) {
+          const W = S.plan.W, H = S.plan.H;
+          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+          const canX = (rect.x + box.hx * rect.w) / W;
+          const canY = (rect.y + box.hy * rect.h) / H;
+          const canR = (box.hr * rect.w) / Math.min(W, H);
+          S.project.avoid = {
+            enabled: true,
+            x: J.clamp(canX, 0.1, 0.9),
+            y: J.clamp(canY, 0.1, 0.9),
+            r: J.clamp(canR, 0.12, 0.32),
+            auto: true
+          };
+          updateAvoidMarkerUI();
+        } else if (mode === 'off' && S.project.avoid && S.project.avoid.auto) {
+          S.project.avoid.enabled = false;
+          updateAvoidMarkerUI();
+        }
+
+        updateDepthUI();
+        replan(); commit(); S.need = true; draw();
+        const labels = {
+          behind: '🎭 背後を回る（キャラの手前・奥を立体表現）',
+          avoid: '🎯 キャラを避ける（顔周辺を自動回避）',
+          both: '🌟 両方（キャラを避けつつ背後にも通す）',
+          off: '通常表示（キャラ演出オフ）'
+        };
+        toast(labels[mode] || mode);
+      });
+    });
+  }
+}
+
 function initGenreSelector() {
   const container = document.getElementById('genreList');
   if (!container) return;
@@ -30884,24 +31253,34 @@ function bind() {
     if (!f) return;
     const url = URL.createObjectURL(f);
     S.bgImageUrl = url;
-    window._bgImgObj = new Image(); window._bgImgObj.src = url;
+    window._bgImgObj = new Image();
+    window._bgImgObj.onload = () => {
+      if (J.depth) J.depth.clear();
+      updateDepthUI();
+      S.need = true; draw();
+    };
+    window._bgImgObj.src = url;
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = `url('${url}')`;
     const bar = document.getElementById('bgImageBar');
     const nameEl = document.getElementById('bgImageName');
     if (bar) bar.style.display = 'flex';
     if (nameEl) nameEl.textContent = f.name;
+    updateDepthUI();
     S.need = true;
   });
   document.getElementById('btnClearBg')?.addEventListener('click', () => {
     S.bgImageUrl = null; window._bgImgObj = null;
+    if (J.depth) J.depth.clear();
+    S.project.depth = 'off';
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = '';
     const bar = document.getElementById('bgImageBar');
     if (bar) bar.style.display = 'none';
     const fi = document.getElementById('bgImageFile');
     if (fi) fi.value = '';
-    S.need = true;
+    updateDepthUI();
+    replan(); commit(); S.need = true; draw();
   });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
 
@@ -31089,6 +31468,8 @@ function boot() {
   initGenreSelector();
   initColorToneSelector();
   initAvoidArea();
+  initDepthControls();
+  updateDepthUI();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

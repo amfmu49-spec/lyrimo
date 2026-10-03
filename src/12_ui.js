@@ -756,6 +756,134 @@ function initAvoidArea() {
   window.addEventListener('resize', updateAvoidMarkerUI);
 }
 
+function updateDepthUI() {
+  const controls = document.getElementById('charDepthControls');
+  const btn = document.getElementById('btnDetectChar');
+  const img = window._bgImgObj;
+  const ready = J.depth && J.depth.ready(img);
+  if (!controls) return;
+  if (!ready) {
+    controls.style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 キャラ検出'; }
+    return;
+  }
+  controls.style.display = 'flex';
+  if (btn) { btn.disabled = false; btn.textContent = '✓ 検出済み'; }
+  const currentDepth = S.project.depth || 'off';
+  controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.depth === currentDepth);
+  });
+}
+
+function initDepthControls() {
+  const btnDetect = document.getElementById('btnDetectChar');
+  const progressBox = document.getElementById('charDetectProgress');
+  const statusEl = document.getElementById('charDetectStatus');
+  const percentEl = document.getElementById('charDetectPercent');
+  const barEl = document.getElementById('charDetectBar');
+  const controls = document.getElementById('charDepthControls');
+
+  if (btnDetect) {
+    btnDetect.addEventListener('click', async () => {
+      const img = window._bgImgObj;
+      if (!img || !img.src) {
+        toast('先に背景画像を読み込んでください');
+        return;
+      }
+      if (J.depth && J.depth.busy) return;
+      btnDetect.disabled = true;
+      btnDetect.textContent = '検出中…';
+      if (progressBox) progressBox.style.display = 'flex';
+      if (controls) controls.style.display = 'none';
+
+      try {
+        await J.depth.detect(img, (phase, pct) => {
+          let text = '処理中…';
+          let pVal = Math.round(pct * 100);
+          if (phase === 'engine') text = 'AIエンジン準備中…';
+          else if (phase === 'model') text = `AIモデル取得中… ${pVal}%（初回のみ保存）`;
+          else if (phase === 'init') text = 'AI推論セッション初期化…';
+          else if (phase === 'run') { text = 'キャラクターを切り抜き中…'; pVal = 92; }
+          else if (phase === 'done') { text = '完了！'; pVal = 100; }
+          if (statusEl) statusEl.textContent = text;
+          if (percentEl) percentEl.textContent = `${pVal}%`;
+          if (barEl) barEl.style.width = `${pVal}%`;
+        });
+
+        if (progressBox) progressBox.style.display = 'none';
+        S.project.depth = 'both';
+
+        const box = J.depth.box;
+        if (box && S.plan) {
+          const W = S.plan.W, H = S.plan.H;
+          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+          const canX = (rect.x + box.hx * rect.w) / W;
+          const canY = (rect.y + box.hy * rect.h) / H;
+          const canR = (box.hr * rect.w) / Math.min(W, H);
+          S.project.avoid = {
+            enabled: true,
+            x: J.clamp(canX, 0.1, 0.9),
+            y: J.clamp(canY, 0.1, 0.9),
+            r: J.clamp(canR, 0.12, 0.32),
+            auto: true
+          };
+          updateAvoidMarkerUI();
+        }
+
+        updateDepthUI();
+        replan(); commit(); S.need = true; draw();
+        toast('🤖 キャラを検出しました！リリックが背後を通り、顔を避けます');
+      } catch (err) {
+        console.error('char detect err', err);
+        if (progressBox) progressBox.style.display = 'none';
+        btnDetect.disabled = false;
+        btnDetect.textContent = '🤖 キャラ検出';
+        toast(`検出エラー: ${err.message || err}`);
+      }
+    });
+  }
+
+  if (controls) {
+    controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const mode = chip.dataset.depth;
+        S.project.depth = mode;
+        const img = window._bgImgObj;
+        const box = J.depth && J.depth.box;
+
+        if ((mode === 'avoid' || mode === 'both') && box && S.plan && img) {
+          const W = S.plan.W, H = S.plan.H;
+          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+          const canX = (rect.x + box.hx * rect.w) / W;
+          const canY = (rect.y + box.hy * rect.h) / H;
+          const canR = (box.hr * rect.w) / Math.min(W, H);
+          S.project.avoid = {
+            enabled: true,
+            x: J.clamp(canX, 0.1, 0.9),
+            y: J.clamp(canY, 0.1, 0.9),
+            r: J.clamp(canR, 0.12, 0.32),
+            auto: true
+          };
+          updateAvoidMarkerUI();
+        } else if (mode === 'off' && S.project.avoid && S.project.avoid.auto) {
+          S.project.avoid.enabled = false;
+          updateAvoidMarkerUI();
+        }
+
+        updateDepthUI();
+        replan(); commit(); S.need = true; draw();
+        const labels = {
+          behind: '🎭 背後を回る（キャラの手前・奥を立体表現）',
+          avoid: '🎯 キャラを避ける（顔周辺を自動回避）',
+          both: '🌟 両方（キャラを避けつつ背後にも通す）',
+          off: '通常表示（キャラ演出オフ）'
+        };
+        toast(labels[mode] || mode);
+      });
+    });
+  }
+}
+
 function initGenreSelector() {
   const container = document.getElementById('genreList');
   if (!container) return;
@@ -1172,24 +1300,34 @@ function bind() {
     if (!f) return;
     const url = URL.createObjectURL(f);
     S.bgImageUrl = url;
-    window._bgImgObj = new Image(); window._bgImgObj.src = url;
+    window._bgImgObj = new Image();
+    window._bgImgObj.onload = () => {
+      if (J.depth) J.depth.clear();
+      updateDepthUI();
+      S.need = true; draw();
+    };
+    window._bgImgObj.src = url;
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = `url('${url}')`;
     const bar = document.getElementById('bgImageBar');
     const nameEl = document.getElementById('bgImageName');
     if (bar) bar.style.display = 'flex';
     if (nameEl) nameEl.textContent = f.name;
+    updateDepthUI();
     S.need = true;
   });
   document.getElementById('btnClearBg')?.addEventListener('click', () => {
     S.bgImageUrl = null; window._bgImgObj = null;
+    if (J.depth) J.depth.clear();
+    S.project.depth = 'off';
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = '';
     const bar = document.getElementById('bgImageBar');
     if (bar) bar.style.display = 'none';
     const fi = document.getElementById('bgImageFile');
     if (fi) fi.value = '';
-    S.need = true;
+    updateDepthUI();
+    replan(); commit(); S.need = true; draw();
   });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
 
@@ -1377,6 +1515,8 @@ function boot() {
   initGenreSelector();
   initColorToneSelector();
   initAvoidArea();
+  initDepthControls();
+  updateDepthUI();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

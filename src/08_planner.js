@@ -230,6 +230,7 @@ J.plan = (project, audio) => {
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
     avoid: project.avoid ? Object.assign({}, project.avoid) : { enabled: false },
+    depth: ['behind', 'avoid', 'both'].includes(project.depth) ? project.depth : 'off',   // キャラ自動検出 (behind, avoid, both, off)
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };

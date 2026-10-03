@@ -77,7 +77,9 @@ class Renderer {
     if (key && !opt.transparent) { ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, W, H); }
     else if (!opt.transparent) {
       if (window._bgImgObj) {
-        ctx.drawImage(window._bgImgObj, 0, 0, W, H);
+        const img = window._bgImgObj;
+        const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+        ctx.drawImage(img, r.x, r.y, r.w, r.h);
       } else {
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
       }
@@ -209,6 +211,12 @@ class Renderer {
         catch (e) { console.warn('trans', mainCut.trans, e); }
         ctx.restore();
       }
+    }
+    // ---------- depth: character foreground layer (lyrics pass behind character) ----------
+    if ((plan.depth === 'behind' || plan.depth === 'both') && J.depth && J.depth.ready(window._bgImgObj) && layer !== 'back') {
+      const img = window._bgImgObj;
+      const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
+      ctx.drawImage(J.depth.fg, r.x, r.y, r.w, r.h);
     }
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {

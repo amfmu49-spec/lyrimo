@@ -11,7 +11,7 @@ js = '\n'.join(read(f) for f in sources)
 mux = '/*! mp4-muxer v5.2.2 | MIT License | (c) 2023 Vanilagy | see THIRD_PARTY_NOTICES.md */\n' + read('vendor/mp4-muxer.min.js')
 def build(lang):
     english = lang == 'en'
-    title = 'LYRIMO v3.4.1 — Lyric Motion Video Maker' if english else 'LYRIMO v3.4.1'
+    title = 'LYRIMO v3.5.0 — Lyric Motion Video Maker' if english else 'LYRIMO v3.5.0'
     description = ('Turn lyrics into animated lyric videos in your browser and export MP4.' if english else '歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ')
     canonical = 'https://amfmu49-spec.github.io/lyrimo/en/' if english else 'https://amfmu49-spec.github.io/lyrimo/'
     language_nav = ('<nav class="lang-switch" aria-label="Language"><a href="../index.html" lang="ja">日本語</a><span aria-current="page">English</span></nav>' if english else '<nav class="lang-switch" aria-label="言語"><span aria-current="page">日本語</span><a href="en/index.html" lang="en">English</a></nav>')
