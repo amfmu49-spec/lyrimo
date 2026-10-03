@@ -621,155 +621,26 @@ function initColorToneSelector() {
   });
 }
 
-/* ---------------- avoid area (character face avoidance) ---------------- */
-let avoidModeActive = false;
-
-function updateAvoidMarkerUI() {
-  const marker = document.getElementById('avoidMarker');
-  const circle = document.getElementById('avoidCircle');
-  const vp = document.getElementById('viewport');
-  const btn = document.getElementById('btnAvoid');
-  const guide = document.getElementById('avoidGuide');
-  if (!marker || !vp || !circle) return;
-
-  const avoid = S.project.avoid || (S.project.avoid = { enabled: false, x: 0.5, y: 0.4, r: 0.2 });
-  if (btn) {
-    btn.setAttribute('aria-pressed', String(!!avoid.enabled || avoidModeActive));
-    if (avoid.enabled || avoidModeActive) btn.classList.add('active'); else btn.classList.remove('active');
-  }
-
-  if (guide) {
-    guide.style.display = avoidModeActive ? 'block' : 'none';
-  }
-
-  if (!avoid.enabled && !avoidModeActive) {
-    marker.style.display = 'none';
-    return;
-  }
-
-  marker.style.display = 'block';
-  marker.style.left = `${(avoid.x * 100).toFixed(2)}%`;
-  marker.style.top = `${(avoid.y * 100).toFixed(2)}%`;
-
-  const vpW = vp.clientWidth, vpH = vp.clientHeight;
-  const diam = Math.round(Math.min(vpW, vpH) * (avoid.r || 0.2) * 2);
-  circle.style.width = `${diam}px`;
-  circle.style.height = `${diam}px`;
-
-  // update size buttons
-  const r = avoid.r || 0.2;
-  const sBtn = document.getElementById('btnAvoidSizeS');
-  const mBtn = document.getElementById('btnAvoidSizeM');
-  const lBtn = document.getElementById('btnAvoidSizeL');
-  if (sBtn) sBtn.classList.toggle('active', r <= 0.16);
-  if (mBtn) mBtn.classList.toggle('active', r > 0.16 && r < 0.26);
-  if (lBtn) lBtn.classList.toggle('active', r >= 0.26);
-}
-
-function initAvoidArea() {
-  const vp = document.getElementById('viewport');
-  const marker = document.getElementById('avoidMarker');
-  const btnAvoid = document.getElementById('btnAvoid');
-  if (!vp || !marker || !btnAvoid) return;
-
-  btnAvoid.addEventListener('click', () => {
-    avoidModeActive = !avoidModeActive;
-    if (avoidModeActive) {
-      if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.38, r: 0.2 };
-      else S.project.avoid.enabled = true;
-      replan(); commit(); S.need = true; draw();
-      toast('🎯 画面をタップして避けたい位置（キャラの顔など）を指定してください');
-    }
-    updateAvoidMarkerUI();
-  });
-
-  // Tap viewport to place / move avoid area
-  vp.addEventListener('pointerdown', e => {
-    if (e.target.closest('#avoidMarker') || e.target.closest('.amuvi-avoid-controls')) return;
-    if (!avoidModeActive && !(S.project.avoid && S.project.avoid.enabled)) return;
-    const rect = vp.getBoundingClientRect();
-    const nx = J.clamp((e.clientX - rect.left) / rect.width, 0.08, 0.92);
-    const ny = J.clamp((e.clientY - rect.top) / rect.height, 0.08, 0.92);
-    if (!S.project.avoid) S.project.avoid = { enabled: true, x: nx, y: ny, r: 0.2 };
-    else { S.project.avoid.enabled = true; S.project.avoid.x = nx; S.project.avoid.y = ny; }
-    avoidModeActive = true;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast('🎯 回避位置を設定しました（文字がこの場所を避けます）');
-  });
-
-  // Drag marker
-  let dragging = false, dX0 = 0, dY0 = 0, origX = 0, origY = 0;
-  marker.addEventListener('pointerdown', e => {
-    if (e.target.closest('.amuvi-avoid-controls')) return;
-    e.stopPropagation(); e.preventDefault();
-    dragging = true;
-    dX0 = e.clientX; dY0 = e.clientY;
-    const avoid = S.project.avoid || (S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r: 0.2 });
-    origX = avoid.x; origY = avoid.y;
-    marker.setPointerCapture(e.pointerId);
-  });
-  marker.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    const rect = vp.getBoundingClientRect();
-    const dx = (e.clientX - dX0) / rect.width;
-    const dy = (e.clientY - dY0) / rect.height;
-    S.project.avoid.x = J.clamp(origX + dx, 0.08, 0.92);
-    S.project.avoid.y = J.clamp(origY + dy, 0.08, 0.92);
-    marker.style.left = `${(S.project.avoid.x * 100).toFixed(2)}%`;
-    marker.style.top = `${(S.project.avoid.y * 100).toFixed(2)}%`;
-    replanSoon(60);
-  });
-  const stopDrag = e => {
-    if (!dragging) return;
-    dragging = false;
-    marker.releasePointerCapture(e.pointerId);
-    replan(); commit(); S.need = true; draw();
-  };
-  marker.addEventListener('pointerup', stopDrag);
-  marker.addEventListener('pointercancel', stopDrag);
-
-  // Size buttons
-  const setSize = (r, label) => {
-    if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r };
-    else S.project.avoid.r = r;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast(`回避エリアサイズ：${label}`);
-  };
-  const sBtn = document.getElementById('btnAvoidSizeS');
-  const mBtn = document.getElementById('btnAvoidSizeM');
-  const lBtn = document.getElementById('btnAvoidSizeL');
-  const clrBtn = document.getElementById('btnAvoidClear');
-  if (sBtn) sBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.14, '小'); });
-  if (mBtn) mBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.22, '中'); });
-  if (lBtn) lBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.30, '大'); });
-  if (clrBtn) clrBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    if (S.project.avoid) S.project.avoid.enabled = false;
-    avoidModeActive = false;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast('回避エリアを解除しました');
-  });
-
-  window.addEventListener('resize', updateAvoidMarkerUI);
-}
+/* ---------------- depth controls (lyrics pass behind character) ---------------- */
+function updateAvoidMarkerUI() {}
+function initAvoidArea() {}
 
 function updateDepthUI() {
   const controls = document.getElementById('charDepthControls');
-  const btn = document.getElementById('btnDetectChar');
-  const img = window._bgImgObj;
-  const ready = J.depth && J.depth.ready(img);
+  const btnDetect = document.getElementById('btnDetectChar');
+  const hasChar = !!window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj));
   if (!controls) return;
-  if (!ready) {
+  if (!hasChar) {
     controls.style.display = 'none';
-    if (btn) { btn.disabled = false; btn.textContent = '🤖 キャラ検出'; }
+    if (btnDetect) { btnDetect.disabled = false; btnDetect.textContent = '🤖 背景からキャラ切り抜き'; }
     return;
   }
   controls.style.display = 'flex';
-  if (btn) { btn.disabled = false; btn.textContent = '✓ 検出済み'; }
-  const currentDepth = S.project.depth || 'off';
+  if (btnDetect) {
+    btnDetect.disabled = false;
+    btnDetect.textContent = (J.depth && J.depth.ready(window._bgImgObj)) ? '✓ AI切り抜き済み' : '🤖 背景からキャラ切り抜き';
+  }
+  const currentDepth = S.project.depth || 'behind';
   controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
     chip.classList.toggle('active', chip.dataset.depth === currentDepth);
   });
@@ -811,33 +682,16 @@ function initDepthControls() {
         });
 
         if (progressBox) progressBox.style.display = 'none';
-        S.project.depth = 'both';
-
-        const box = J.depth.box;
-        if (box && S.plan) {
-          const W = S.plan.W, H = S.plan.H;
-          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-          const canX = (rect.x + box.hx * rect.w) / W;
-          const canY = (rect.y + box.hy * rect.h) / H;
-          const canR = (box.hr * rect.w) / Math.min(W, H);
-          S.project.avoid = {
-            enabled: true,
-            x: J.clamp(canX, 0.1, 0.9),
-            y: J.clamp(canY, 0.1, 0.9),
-            r: J.clamp(canR, 0.12, 0.32),
-            auto: true
-          };
-          updateAvoidMarkerUI();
-        }
+        S.project.depth = 'behind';
 
         updateDepthUI();
         replan(); commit(); S.need = true; draw();
-        toast('🤖 キャラを検出しました！リリックが背後を通り、顔を避けます');
+        toast('🤖 キャラを検出しました！リリックが背後を通過します');
       } catch (err) {
         console.error('char detect err', err);
         if (progressBox) progressBox.style.display = 'none';
         btnDetect.disabled = false;
-        btnDetect.textContent = '🤖 キャラ検出';
+        btnDetect.textContent = '🤖 背景からキャラ切り抜き';
         toast(`検出エラー: ${err.message || err}`);
       }
     });
@@ -848,35 +702,12 @@ function initDepthControls() {
       chip.addEventListener('click', () => {
         const mode = chip.dataset.depth;
         S.project.depth = mode;
-        const img = window._bgImgObj;
-        const box = J.depth && J.depth.box;
-
-        if ((mode === 'avoid' || mode === 'both') && box && S.plan && img) {
-          const W = S.plan.W, H = S.plan.H;
-          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-          const canX = (rect.x + box.hx * rect.w) / W;
-          const canY = (rect.y + box.hy * rect.h) / H;
-          const canR = (box.hr * rect.w) / Math.min(W, H);
-          S.project.avoid = {
-            enabled: true,
-            x: J.clamp(canX, 0.1, 0.9),
-            y: J.clamp(canY, 0.1, 0.9),
-            r: J.clamp(canR, 0.12, 0.32),
-            auto: true
-          };
-          updateAvoidMarkerUI();
-        } else if (mode === 'off' && S.project.avoid && S.project.avoid.auto) {
-          S.project.avoid.enabled = false;
-          updateAvoidMarkerUI();
-        }
-
         updateDepthUI();
         replan(); commit(); S.need = true; draw();
         const labels = {
-          behind: '🎭 背後を回る（キャラの手前・奥を立体表現）',
-          avoid: '🎯 キャラを避ける（顔周辺を自動回避）',
-          both: '🌟 両方（キャラを避けつつ背後にも通す）',
-          off: '通常表示（キャラ演出オフ）'
+          behind: '🎭 キャラの背後を通る（奥レイヤー）',
+          cross: '⚡ 手前・奥が交差（3D立体）',
+          off: '通常表示（前面）'
         };
         toast(labels[mode] || mode);
       });
@@ -1298,7 +1129,22 @@ function bind() {
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  /* Background image & character standing artwork */
   S.bgImageUrl = null; window._bgImgObj = null;
+  S.charFgUrl = null; window._charFgImgObj = null;
+
+  function updateLayerBar() {
+    const bar = document.getElementById('bgImageBar');
+    const bgRow = document.getElementById('bgRow');
+    const charRow = document.getElementById('charRow');
+    const hasBg = !!window._bgImgObj;
+    const hasChar = !!window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj));
+    if (bar) bar.style.display = (hasBg || hasChar) ? 'flex' : 'none';
+    if (bgRow) bgRow.style.display = hasBg ? 'flex' : 'none';
+    if (charRow) charRow.style.display = window._charFgImgObj ? 'flex' : 'none';
+    updateDepthUI();
+  }
+
   $('bgImageFile')?.addEventListener('change', e => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
@@ -1307,31 +1153,54 @@ function bind() {
     window._bgImgObj = new Image();
     window._bgImgObj.onload = () => {
       if (J.depth) J.depth.clear();
-      updateDepthUI();
+      updateLayerBar();
       S.need = true; draw();
     };
     window._bgImgObj.src = url;
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = `url('${url}')`;
-    const bar = document.getElementById('bgImageBar');
     const nameEl = document.getElementById('bgImageName');
-    if (bar) bar.style.display = 'flex';
     if (nameEl) nameEl.textContent = f.name;
-    updateDepthUI();
+    updateLayerBar();
     S.need = true;
   });
+
+  $('charImageFile')?.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    S.charFgUrl = url;
+    window._charFgImgObj = new Image();
+    window._charFgImgObj.onload = () => {
+      S.project.depth = S.project.depth || 'behind';
+      updateLayerBar();
+      replan(); commit(); S.need = true; draw();
+      toast('👤 キャラ立ち絵を読み込みました！リリックがキャラの後ろを通過します');
+    };
+    window._charFgImgObj.src = url;
+    const nameEl = document.getElementById('charImageName');
+    if (nameEl) nameEl.textContent = f.name;
+    updateLayerBar();
+  });
+
   document.getElementById('btnClearBg')?.addEventListener('click', () => {
     S.bgImageUrl = null; window._bgImgObj = null;
     if (J.depth) J.depth.clear();
-    S.project.depth = 'off';
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = '';
-    const bar = document.getElementById('bgImageBar');
-    if (bar) bar.style.display = 'none';
     const fi = document.getElementById('bgImageFile');
     if (fi) fi.value = '';
-    updateDepthUI();
+    updateLayerBar();
     replan(); commit(); S.need = true; draw();
+  });
+
+  document.getElementById('btnClearChar')?.addEventListener('click', () => {
+    S.charFgUrl = null; window._charFgImgObj = null;
+    const fi = document.getElementById('charImageFile');
+    if (fi) fi.value = '';
+    updateLayerBar();
+    replan(); commit(); S.need = true; draw();
+    toast('キャラ画像を解除しました');
   });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
 

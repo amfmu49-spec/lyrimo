@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.5.0</title>
+<title>LYRIMO v3.6.0</title>
 <meta name="description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.5.0">
+<meta property="og:title" content="LYRIMO v3.6.0">
 <meta property="og:description" content="歌詞を入れると文字PV（リリックモーション）を自動で組み立てて MP4 に書き出すブラウザアプリ">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/">
 <meta name="twitter:card" content="summary">
@@ -525,7 +525,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.5.0</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.6.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -561,17 +561,27 @@ body {
              📝 SRTを読み込む
              <input id="srtFile" type="file" accept=".srt">
            </label>
-           <label class="amuvi-btn file" title="背景画像を設定（リリックモーションが透過されます）">
+           <label class="amuvi-btn file" title="背景画像を設定">
              🖼 背景画像
              <input id="bgImageFile" type="file" accept="image/*">
            </label>
+           <label class="amuvi-btn file" title="キャラクター画像（透過PNG）を読み込むと、リリックがキャラの後ろを通過する奥行き表現になります">
+             👤 キャラ立ち絵 (透過PNG)
+             <input id="charImageFile" type="file" accept="image/png,image/webp">
+           </label>
         </div>
         <div id="bgImageBar" style="display:none; flex-direction:column; gap:6px; margin-top:6px; font-size:12px; color:#7c3aed; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:8px 12px;">
-          <div style="display:flex; align-items:center; gap:8px; width:100%;">
+          <div id="bgRow" style="display:none; align-items:center; gap:8px; width:100%;">
             <span>🖼 背景：</span>
-            <span id="bgImageName" style="font-weight:600; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
-            <button type="button" id="btnDetectChar" class="amuvi-char-detect-btn" title="AIでキャラを自動検出して切り抜き">🤖 キャラ検出</button>
+            <span id="bgImageName" style="font-weight:600; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <button type="button" id="btnDetectChar" class="amuvi-char-detect-btn" title="AIで背景からキャラを自動検出して切り抜き">🤖 背景からキャラ切り抜き</button>
             <button type="button" id="btnClearBg" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
+          </div>
+          <div id="charRow" style="display:none; align-items:center; gap:8px; width:100%;">
+            <span>👤 キャラ：</span>
+            <span id="charImageName" style="font-weight:600; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            <span style="font-size:11px; color:#10b981; font-weight:700;">✅ 前景レイヤー</span>
+            <button type="button" id="btnClearChar" style="margin-left:auto; font-size:11px; padding:2px 8px; border:1px solid #7c3aed66; border-radius:4px; background:none; color:#7c3aed; cursor:pointer;">✕ 解除</button>
           </div>
           <div id="charDetectProgress" style="display:none; width:100%; flex-direction:column; gap:4px; margin-top:2px;">
             <div style="display:flex; justify-content:space-between; font-size:11px; color:#6d28d9;">
@@ -583,11 +593,10 @@ body {
             </div>
           </div>
           <div id="charDepthControls" style="display:none; align-items:center; gap:6px; padding-top:6px; border-top:1px dashed #ddd6fe; flex-wrap:wrap;">
-            <span style="font-size:11px; font-weight:700; color:#4c1d95;">キャラ演出:</span>
-            <button type="button" class="amuvi-depth-chip" data-depth="behind" title="文字がキャラクターの後ろを通る立体表現">🎭 背後を回る</button>
-            <button type="button" class="amuvi-depth-chip" data-depth="avoid" title="キャラクターの顔や体を避けて文字を自動配置">🎯 キャラを避ける</button>
-            <button type="button" class="amuvi-depth-chip" data-depth="both" title="キャラを避けつつ背後にも通す">🌟 両方</button>
-            <button type="button" class="amuvi-depth-chip" data-depth="off" title="通常表示（キャラ演出オフ）">オフ</button>
+            <span style="font-size:11px; font-weight:700; color:#4c1d95;">🎭 奥行き表現:</span>
+            <button type="button" class="amuvi-depth-chip active" data-depth="behind" title="文字がキャラクターの後ろをくぐり抜ける本格的な奥行き演出">🎭 キャラの背後を通る (奥)</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="cross" title="カットごとにキャラの奥と手前をリリックが交互に駆け巡るダイナミックな奥行き">⚡ 手前・奥が交差 (3D)</button>
+            <button type="button" class="amuvi-depth-chip" data-depth="off" title="通常表示（文字は常に前面）">オフ (前面)</button>
           </div>
         </div>
         
@@ -636,18 +645,6 @@ body {
           <div id="viewMsg" class="overlay-msg" hidden></div>
           <div id="keyBadge" class="key-badge" hidden></div>
           <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-          <div id="avoidGuide" class="amuvi-avoid-guide" style="display:none;">🎯 画面をタップして避けたい位置（キャラの顔など）を指定</div>
-          <div id="avoidMarker" class="amuvi-avoid-marker" style="display:none;">
-            <div id="avoidCircle" class="amuvi-avoid-circle">
-              <span class="amuvi-avoid-icon">🎯</span>
-            </div>
-            <div class="amuvi-avoid-controls">
-              <button type="button" id="btnAvoidSizeS" class="amuvi-avoid-btn" title="小さめ">小</button>
-              <button type="button" id="btnAvoidSizeM" class="amuvi-avoid-btn active" title="標準">中</button>
-              <button type="button" id="btnAvoidSizeL" class="amuvi-avoid-btn" title="大きめ">大</button>
-              <button type="button" id="btnAvoidClear" class="amuvi-avoid-btn clear" title="解除">✕</button>
-            </div>
-          </div>
         </div>
         <div class="transport amuvi-transport">
           <button id="btnPlay" class="play amuvi-icon-btn" aria-label="再生">▶</button>
@@ -655,7 +652,6 @@ body {
           <span class="tc muted">/</span>
           <span id="timeDur" class="tc muted">00:00.00</span>
           <input id="scrub" type="range" min="0" max="10000" value="0" aria-label="再生位置" class="amuvi-slider">
-          <button id="btnAvoid" class="amuvi-icon-btn ghost small" aria-pressed="false" title="画面をタップした位置を避けて文字を配置（キャラの顔除外）">🎯</button>
           <button id="btnLoop" style="display:none;" aria-pressed="true" aria-hidden="true"></button>
           <span class="vol" style="display:none;">
             <button id="btnMute"></button>
@@ -1105,30 +1101,11 @@ J.fmtTime = (t, fps) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${fps ? ':' + String(f).padStart(2, '0') : '.' + String(f).padStart(2, '0')}`;
 };
 
-/* calculate shift for an item to avoid the designated safe circle (e.g. character's face) */
-J.calcAvoidShift = (x, y, w, h, avoid, W, H) => {
-  if (!avoid || !avoid.enabled) return [0, 0];
-  const ax = avoid.x * W, ay = avoid.y * H;
-  const ar = Math.min(W, H) * (avoid.r || 0.2);
-  const re = ar + Math.max(w || 0, h || 0) * 0.48 + Math.min(W, H) * 0.04;
-  let dx = x - ax, dy = y - ay;
-  let dist = Math.hypot(dx, dy);
-  if (dist >= re) return [0, 0];
-  if (dist < 1e-3) {
-    const topSpace = ay, btmSpace = H - ay;
-    dy = btmSpace >= topSpace ? 1 : -1;
-    dx = 0; dist = 1;
-  }
-  const push = re - dist;
-  const ux = dx / dist, uy = dy / dist;
-  let sx = ux * push, sy = uy * push;
-  const marginX = W * 0.06, marginY = H * 0.06;
-  if (y + sy > H - marginY && uy > 0) {
-    sy = -(ay - (y - re));
-  } else if (y + sy < marginY && uy < 0) {
-    sy = (ay + re) - y;
-  }
-  return [sx, sy];
+/* positioning for standalone character artwork (anchored bottom-center) */
+J.charRect = (iw, ih, W, H) => {
+  const k = Math.min((W * 0.88) / Math.max(1, iw), (H * 0.94) / Math.max(1, ih));
+  const w = iw * k, h = ih * k;
+  return { x: (W - w) / 2, y: H - h, w, h };
 };
 
 /* ============================================================
@@ -1663,14 +1640,8 @@ J.drawItem = (env, it) => {
   const col = ghostPass ? env.passColor : (it.color || '#fff');
   const sCol = ghostPass ? env.passColor : (it.strokeColor || it.color || '#fff');
   const fill = it.fill !== false;
-  let posX = it.x, posY = it.y;
-  const avoid = env.avoid || (env.plan && env.plan.avoid);
-  if (avoid && avoid.enabled && J.calcAvoidShift) {
-    const [asx, asy] = J.calcAvoidShift(it.x, it.y, it.w || (size * (it.text ? it.text.length : 1) * 0.7), it.h || size, avoid, env.W, env.H);
-    posX += asx; posY += asy;
-  }
   ctx.save();
-  ctx.translate(posX, posY);
+  ctx.translate(it.x, it.y);
   if (it.rot) ctx.rotate(it.rot * J.DEG);
   if (it.skew) ctx.transform(1, 0, Math.tan(it.skew * J.DEG), 1, 0, 0);
   if (it.blend) ctx.globalCompositeOperation = it.blend;
@@ -3544,7 +3515,7 @@ J.defaultProject = () => ({
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
   colorTone: 'auto',
-  avoid: { enabled: false, x: 0.5, y: 0.4, r: 0.2 },
+  depth: 'behind',
   colors: { enabled: false },
   fonts: {},
 });
@@ -3747,8 +3718,7 @@ J.plan = (project, audio) => {
     duration: tm.duration, styleKey: project.style, style: st, fx, seed: project.seed,
     lines: [], cuts: [], events: [], beats: audio && audio.beats ? audio.beats.slice() : [],
     hud: fx.hud === 'on' ? true : fx.hud === 'off' ? false : !!st.hud,
-    avoid: project.avoid ? Object.assign({}, project.avoid) : { enabled: false },
-    depth: ['behind', 'avoid', 'both'].includes(project.depth) ? project.depth : 'off',   // キャラ自動検出 (behind, avoid, both, off)
+    depth: project.depth || 'behind',   // 奥行き表現 ('behind': キャラの背後を通過, 'cross': 3D交差, 'off': 通常前面)
     keyBg: J.keyMode ? J.keyMode(project) : null,   // 'green' | 'black' | null — 合成用の背景
     lang: J.resolveLang ? J.resolveLang(project) : 'ja',   // 歌詞の言語 (auto → detected)
   };
@@ -4251,10 +4221,19 @@ class Renderer {
       const paperAmt = (sc.paper ? 1 : st.texture.paper || 0) * (fx.texture ?? 0.6);
       if (paperAmt > 0.02) {
         ctx.globalCompositeOperation = J.lum(sc.bg) < 0.4 ? 'screen' : 'multiply';
-        ctx.globalAlpha = J.lum(sc.bg) < 0.4 ? paperAmt * 0.06 : paperAmt * 0.85;
         if (J.lum(sc.bg) < 0.4) ctx.filter = 'invert(1)';
         ctx.drawImage(this.paper(W, H), 0, 0, W, H);
         ctx.filter = 'none'; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      }
+      // depth: character behind text (when in cross 3D mode on alternating cuts)
+      const fgBg = window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj) ? J.depth.fg : null);
+      if (fgBg && plan.depth && plan.depth !== 'off') {
+        const isBehind = !plan.depth || plan.depth === 'behind' || (plan.depth === 'cross' && (mainCut ? mainCut.index % 2 === 0 : true));
+        if (!isBehind) {
+          const iw = fgBg.naturalWidth || fgBg.width, ih = fgBg.naturalHeight || fgBg.height;
+          const r = window._charFgImgObj && J.charRect ? J.charRect(iw, ih, W, H) : (J.coverRect ? J.coverRect(iw, ih, W, H) : { x: 0, y: 0, w: W, h: H });
+          ctx.drawImage(fgBg, r.x, r.y, r.w, r.h);
+        }
       }
     }
     // ---------- camera & chroma amounts ----------
@@ -4328,25 +4307,7 @@ class Renderer {
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
       const cs = cam.s ?? 1;
-      let avoidOffX = 0, avoidOffY = 0;
-      const avoid = plan.avoid;
-      if (avoid && avoid.enabled) {
-        const ax = avoid.x * W, ay = avoid.y * H;
-        const ar = Math.min(W, H) * (avoid.r || 0.2);
-        const distFromCenter = Math.hypot(W / 2 - ax, H / 2 - ay);
-        if (distFromCenter < ar * 1.6) {
-          const topSpace = ay - ar, btmSpace = H - (ay + ar);
-          if (btmSpace >= topSpace && btmSpace > H * 0.22) {
-            avoidOffY = (ay + ar + H * 0.08) - H / 2;
-          } else if (topSpace > H * 0.22) {
-            avoidOffY = (ay - ar - H * 0.08) - H / 2;
-          } else {
-            const leftSpace = ax - ar, rightSpace = W - (ax + ar);
-            avoidOffX = rightSpace >= leftSpace ? (ax + ar + W * 0.08) - W / 2 : (ax - ar - W * 0.08) - W / 2;
-          }
-        }
-      }
-      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0) + avoidOffX, H / 2 + shy + P.off[1] + (cam.y || 0) + avoidOffY);
+      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
       if (cam.rot) X.rotate(cam.rot * J.DEG);
       if (cam.skx) X.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
       X.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); X.translate(-W / 2, -H / 2);
@@ -4375,10 +4336,14 @@ class Renderer {
       }
     }
     // ---------- depth: character foreground layer (lyrics pass behind character) ----------
-    if ((plan.depth === 'behind' || plan.depth === 'both') && J.depth && J.depth.ready(window._bgImgObj) && layer !== 'back') {
-      const img = window._bgImgObj;
-      const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-      ctx.drawImage(J.depth.fg, r.x, r.y, r.w, r.h);
+    const fg = window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj) ? J.depth.fg : null);
+    if (fg && plan.depth !== 'off' && layer !== 'back') {
+      const isBehind = !plan.depth || plan.depth === 'behind' || (plan.depth === 'cross' && (mainCut ? mainCut.index % 2 === 0 : true));
+      if (isBehind) {
+        const iw = fg.naturalWidth || fg.width, ih = fg.naturalHeight || fg.height;
+        const r = window._charFgImgObj && J.charRect ? J.charRect(iw, ih, W, H) : (J.coverRect ? J.coverRect(iw, ih, W, H) : { x: 0, y: 0, w: W, h: H });
+        ctx.drawImage(fg, r.x, r.y, r.w, r.h);
+      }
     }
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {
@@ -30576,155 +30541,26 @@ function initColorToneSelector() {
   });
 }
 
-/* ---------------- avoid area (character face avoidance) ---------------- */
-let avoidModeActive = false;
-
-function updateAvoidMarkerUI() {
-  const marker = document.getElementById('avoidMarker');
-  const circle = document.getElementById('avoidCircle');
-  const vp = document.getElementById('viewport');
-  const btn = document.getElementById('btnAvoid');
-  const guide = document.getElementById('avoidGuide');
-  if (!marker || !vp || !circle) return;
-
-  const avoid = S.project.avoid || (S.project.avoid = { enabled: false, x: 0.5, y: 0.4, r: 0.2 });
-  if (btn) {
-    btn.setAttribute('aria-pressed', String(!!avoid.enabled || avoidModeActive));
-    if (avoid.enabled || avoidModeActive) btn.classList.add('active'); else btn.classList.remove('active');
-  }
-
-  if (guide) {
-    guide.style.display = avoidModeActive ? 'block' : 'none';
-  }
-
-  if (!avoid.enabled && !avoidModeActive) {
-    marker.style.display = 'none';
-    return;
-  }
-
-  marker.style.display = 'block';
-  marker.style.left = `${(avoid.x * 100).toFixed(2)}%`;
-  marker.style.top = `${(avoid.y * 100).toFixed(2)}%`;
-
-  const vpW = vp.clientWidth, vpH = vp.clientHeight;
-  const diam = Math.round(Math.min(vpW, vpH) * (avoid.r || 0.2) * 2);
-  circle.style.width = `${diam}px`;
-  circle.style.height = `${diam}px`;
-
-  // update size buttons
-  const r = avoid.r || 0.2;
-  const sBtn = document.getElementById('btnAvoidSizeS');
-  const mBtn = document.getElementById('btnAvoidSizeM');
-  const lBtn = document.getElementById('btnAvoidSizeL');
-  if (sBtn) sBtn.classList.toggle('active', r <= 0.16);
-  if (mBtn) mBtn.classList.toggle('active', r > 0.16 && r < 0.26);
-  if (lBtn) lBtn.classList.toggle('active', r >= 0.26);
-}
-
-function initAvoidArea() {
-  const vp = document.getElementById('viewport');
-  const marker = document.getElementById('avoidMarker');
-  const btnAvoid = document.getElementById('btnAvoid');
-  if (!vp || !marker || !btnAvoid) return;
-
-  btnAvoid.addEventListener('click', () => {
-    avoidModeActive = !avoidModeActive;
-    if (avoidModeActive) {
-      if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.38, r: 0.2 };
-      else S.project.avoid.enabled = true;
-      replan(); commit(); S.need = true; draw();
-      toast('🎯 画面をタップして避けたい位置（キャラの顔など）を指定してください');
-    }
-    updateAvoidMarkerUI();
-  });
-
-  // Tap viewport to place / move avoid area
-  vp.addEventListener('pointerdown', e => {
-    if (e.target.closest('#avoidMarker') || e.target.closest('.amuvi-avoid-controls')) return;
-    if (!avoidModeActive && !(S.project.avoid && S.project.avoid.enabled)) return;
-    const rect = vp.getBoundingClientRect();
-    const nx = J.clamp((e.clientX - rect.left) / rect.width, 0.08, 0.92);
-    const ny = J.clamp((e.clientY - rect.top) / rect.height, 0.08, 0.92);
-    if (!S.project.avoid) S.project.avoid = { enabled: true, x: nx, y: ny, r: 0.2 };
-    else { S.project.avoid.enabled = true; S.project.avoid.x = nx; S.project.avoid.y = ny; }
-    avoidModeActive = true;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast('🎯 回避位置を設定しました（文字がこの場所を避けます）');
-  });
-
-  // Drag marker
-  let dragging = false, dX0 = 0, dY0 = 0, origX = 0, origY = 0;
-  marker.addEventListener('pointerdown', e => {
-    if (e.target.closest('.amuvi-avoid-controls')) return;
-    e.stopPropagation(); e.preventDefault();
-    dragging = true;
-    dX0 = e.clientX; dY0 = e.clientY;
-    const avoid = S.project.avoid || (S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r: 0.2 });
-    origX = avoid.x; origY = avoid.y;
-    marker.setPointerCapture(e.pointerId);
-  });
-  marker.addEventListener('pointermove', e => {
-    if (!dragging) return;
-    const rect = vp.getBoundingClientRect();
-    const dx = (e.clientX - dX0) / rect.width;
-    const dy = (e.clientY - dY0) / rect.height;
-    S.project.avoid.x = J.clamp(origX + dx, 0.08, 0.92);
-    S.project.avoid.y = J.clamp(origY + dy, 0.08, 0.92);
-    marker.style.left = `${(S.project.avoid.x * 100).toFixed(2)}%`;
-    marker.style.top = `${(S.project.avoid.y * 100).toFixed(2)}%`;
-    replanSoon(60);
-  });
-  const stopDrag = e => {
-    if (!dragging) return;
-    dragging = false;
-    marker.releasePointerCapture(e.pointerId);
-    replan(); commit(); S.need = true; draw();
-  };
-  marker.addEventListener('pointerup', stopDrag);
-  marker.addEventListener('pointercancel', stopDrag);
-
-  // Size buttons
-  const setSize = (r, label) => {
-    if (!S.project.avoid) S.project.avoid = { enabled: true, x: 0.5, y: 0.4, r };
-    else S.project.avoid.r = r;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast(`回避エリアサイズ：${label}`);
-  };
-  const sBtn = document.getElementById('btnAvoidSizeS');
-  const mBtn = document.getElementById('btnAvoidSizeM');
-  const lBtn = document.getElementById('btnAvoidSizeL');
-  const clrBtn = document.getElementById('btnAvoidClear');
-  if (sBtn) sBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.14, '小'); });
-  if (mBtn) mBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.22, '中'); });
-  if (lBtn) lBtn.addEventListener('click', e => { e.stopPropagation(); setSize(0.30, '大'); });
-  if (clrBtn) clrBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    if (S.project.avoid) S.project.avoid.enabled = false;
-    avoidModeActive = false;
-    updateAvoidMarkerUI();
-    replan(); commit(); S.need = true; draw();
-    toast('回避エリアを解除しました');
-  });
-
-  window.addEventListener('resize', updateAvoidMarkerUI);
-}
+/* ---------------- depth controls (lyrics pass behind character) ---------------- */
+function updateAvoidMarkerUI() {}
+function initAvoidArea() {}
 
 function updateDepthUI() {
   const controls = document.getElementById('charDepthControls');
-  const btn = document.getElementById('btnDetectChar');
-  const img = window._bgImgObj;
-  const ready = J.depth && J.depth.ready(img);
+  const btnDetect = document.getElementById('btnDetectChar');
+  const hasChar = !!window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj));
   if (!controls) return;
-  if (!ready) {
+  if (!hasChar) {
     controls.style.display = 'none';
-    if (btn) { btn.disabled = false; btn.textContent = '🤖 キャラ検出'; }
+    if (btnDetect) { btnDetect.disabled = false; btnDetect.textContent = '🤖 背景からキャラ切り抜き'; }
     return;
   }
   controls.style.display = 'flex';
-  if (btn) { btn.disabled = false; btn.textContent = '✓ 検出済み'; }
-  const currentDepth = S.project.depth || 'off';
+  if (btnDetect) {
+    btnDetect.disabled = false;
+    btnDetect.textContent = (J.depth && J.depth.ready(window._bgImgObj)) ? '✓ AI切り抜き済み' : '🤖 背景からキャラ切り抜き';
+  }
+  const currentDepth = S.project.depth || 'behind';
   controls.querySelectorAll('.amuvi-depth-chip').forEach(chip => {
     chip.classList.toggle('active', chip.dataset.depth === currentDepth);
   });
@@ -30766,33 +30602,16 @@ function initDepthControls() {
         });
 
         if (progressBox) progressBox.style.display = 'none';
-        S.project.depth = 'both';
-
-        const box = J.depth.box;
-        if (box && S.plan) {
-          const W = S.plan.W, H = S.plan.H;
-          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-          const canX = (rect.x + box.hx * rect.w) / W;
-          const canY = (rect.y + box.hy * rect.h) / H;
-          const canR = (box.hr * rect.w) / Math.min(W, H);
-          S.project.avoid = {
-            enabled: true,
-            x: J.clamp(canX, 0.1, 0.9),
-            y: J.clamp(canY, 0.1, 0.9),
-            r: J.clamp(canR, 0.12, 0.32),
-            auto: true
-          };
-          updateAvoidMarkerUI();
-        }
+        S.project.depth = 'behind';
 
         updateDepthUI();
         replan(); commit(); S.need = true; draw();
-        toast('🤖 キャラを検出しました！リリックが背後を通り、顔を避けます');
+        toast('🤖 キャラを検出しました！リリックが背後を通過します');
       } catch (err) {
         console.error('char detect err', err);
         if (progressBox) progressBox.style.display = 'none';
         btnDetect.disabled = false;
-        btnDetect.textContent = '🤖 キャラ検出';
+        btnDetect.textContent = '🤖 背景からキャラ切り抜き';
         toast(`検出エラー: ${err.message || err}`);
       }
     });
@@ -30803,35 +30622,12 @@ function initDepthControls() {
       chip.addEventListener('click', () => {
         const mode = chip.dataset.depth;
         S.project.depth = mode;
-        const img = window._bgImgObj;
-        const box = J.depth && J.depth.box;
-
-        if ((mode === 'avoid' || mode === 'both') && box && S.plan && img) {
-          const W = S.plan.W, H = S.plan.H;
-          const rect = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-          const canX = (rect.x + box.hx * rect.w) / W;
-          const canY = (rect.y + box.hy * rect.h) / H;
-          const canR = (box.hr * rect.w) / Math.min(W, H);
-          S.project.avoid = {
-            enabled: true,
-            x: J.clamp(canX, 0.1, 0.9),
-            y: J.clamp(canY, 0.1, 0.9),
-            r: J.clamp(canR, 0.12, 0.32),
-            auto: true
-          };
-          updateAvoidMarkerUI();
-        } else if (mode === 'off' && S.project.avoid && S.project.avoid.auto) {
-          S.project.avoid.enabled = false;
-          updateAvoidMarkerUI();
-        }
-
         updateDepthUI();
         replan(); commit(); S.need = true; draw();
         const labels = {
-          behind: '🎭 背後を回る（キャラの手前・奥を立体表現）',
-          avoid: '🎯 キャラを避ける（顔周辺を自動回避）',
-          both: '🌟 両方（キャラを避けつつ背後にも通す）',
-          off: '通常表示（キャラ演出オフ）'
+          behind: '🎭 キャラの背後を通る（奥レイヤー）',
+          cross: '⚡ 手前・奥が交差（3D立体）',
+          off: '通常表示（前面）'
         };
         toast(labels[mode] || mode);
       });
@@ -31253,7 +31049,22 @@ function bind() {
   $('lineScale').addEventListener('change', e => { S.project.timing.lineScale = J.clamp(parseFloat(e.target.value) || 1, 0.3, 4); replan(); });
   $('snap').addEventListener('change', e => { S.project.timing.snap = e.target.checked; replan(); });
   $('btnResetTimes').addEventListener('click', () => { S.project.timing.lineTimes = {}; replan(); });
+  /* Background image & character standing artwork */
   S.bgImageUrl = null; window._bgImgObj = null;
+  S.charFgUrl = null; window._charFgImgObj = null;
+
+  function updateLayerBar() {
+    const bar = document.getElementById('bgImageBar');
+    const bgRow = document.getElementById('bgRow');
+    const charRow = document.getElementById('charRow');
+    const hasBg = !!window._bgImgObj;
+    const hasChar = !!window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj));
+    if (bar) bar.style.display = (hasBg || hasChar) ? 'flex' : 'none';
+    if (bgRow) bgRow.style.display = hasBg ? 'flex' : 'none';
+    if (charRow) charRow.style.display = window._charFgImgObj ? 'flex' : 'none';
+    updateDepthUI();
+  }
+
   $('bgImageFile')?.addEventListener('change', e => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
@@ -31262,31 +31073,54 @@ function bind() {
     window._bgImgObj = new Image();
     window._bgImgObj.onload = () => {
       if (J.depth) J.depth.clear();
-      updateDepthUI();
+      updateLayerBar();
       S.need = true; draw();
     };
     window._bgImgObj.src = url;
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = `url('${url}')`;
-    const bar = document.getElementById('bgImageBar');
     const nameEl = document.getElementById('bgImageName');
-    if (bar) bar.style.display = 'flex';
     if (nameEl) nameEl.textContent = f.name;
-    updateDepthUI();
+    updateLayerBar();
     S.need = true;
   });
+
+  $('charImageFile')?.addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    S.charFgUrl = url;
+    window._charFgImgObj = new Image();
+    window._charFgImgObj.onload = () => {
+      S.project.depth = S.project.depth || 'behind';
+      updateLayerBar();
+      replan(); commit(); S.need = true; draw();
+      toast('👤 キャラ立ち絵を読み込みました！リリックがキャラの後ろを通過します');
+    };
+    window._charFgImgObj.src = url;
+    const nameEl = document.getElementById('charImageName');
+    if (nameEl) nameEl.textContent = f.name;
+    updateLayerBar();
+  });
+
   document.getElementById('btnClearBg')?.addEventListener('click', () => {
     S.bgImageUrl = null; window._bgImgObj = null;
     if (J.depth) J.depth.clear();
-    S.project.depth = 'off';
     const layer = document.getElementById('bgImageLayer');
     if (layer) layer.style.backgroundImage = '';
-    const bar = document.getElementById('bgImageBar');
-    if (bar) bar.style.display = 'none';
     const fi = document.getElementById('bgImageFile');
     if (fi) fi.value = '';
-    updateDepthUI();
+    updateLayerBar();
     replan(); commit(); S.need = true; draw();
+  });
+
+  document.getElementById('btnClearChar')?.addEventListener('click', () => {
+    S.charFgUrl = null; window._charFgImgObj = null;
+    const fi = document.getElementById('charImageFile');
+    if (fi) fi.value = '';
+    updateLayerBar();
+    replan(); commit(); S.need = true; draw();
+    toast('キャラ画像を解除しました');
   });
   $('audioFile').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) loadAudioFile(f); });
 

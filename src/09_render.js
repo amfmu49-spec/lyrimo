@@ -90,10 +90,19 @@ class Renderer {
       const paperAmt = (sc.paper ? 1 : st.texture.paper || 0) * (fx.texture ?? 0.6);
       if (paperAmt > 0.02) {
         ctx.globalCompositeOperation = J.lum(sc.bg) < 0.4 ? 'screen' : 'multiply';
-        ctx.globalAlpha = J.lum(sc.bg) < 0.4 ? paperAmt * 0.06 : paperAmt * 0.85;
         if (J.lum(sc.bg) < 0.4) ctx.filter = 'invert(1)';
         ctx.drawImage(this.paper(W, H), 0, 0, W, H);
         ctx.filter = 'none'; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      }
+      // depth: character behind text (when in cross 3D mode on alternating cuts)
+      const fgBg = window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj) ? J.depth.fg : null);
+      if (fgBg && plan.depth && plan.depth !== 'off') {
+        const isBehind = !plan.depth || plan.depth === 'behind' || (plan.depth === 'cross' && (mainCut ? mainCut.index % 2 === 0 : true));
+        if (!isBehind) {
+          const iw = fgBg.naturalWidth || fgBg.width, ih = fgBg.naturalHeight || fgBg.height;
+          const r = window._charFgImgObj && J.charRect ? J.charRect(iw, ih, W, H) : (J.coverRect ? J.coverRect(iw, ih, W, H) : { x: 0, y: 0, w: W, h: H });
+          ctx.drawImage(fgBg, r.x, r.y, r.w, r.h);
+        }
       }
     }
     // ---------- camera & chroma amounts ----------
@@ -167,25 +176,7 @@ class Renderer {
       try { cam = CD.get(env, cut.camP || {}); } catch (e) { cam = null; }
       cam = cam || {};
       const cs = cam.s ?? 1;
-      let avoidOffX = 0, avoidOffY = 0;
-      const avoid = plan.avoid;
-      if (avoid && avoid.enabled) {
-        const ax = avoid.x * W, ay = avoid.y * H;
-        const ar = Math.min(W, H) * (avoid.r || 0.2);
-        const distFromCenter = Math.hypot(W / 2 - ax, H / 2 - ay);
-        if (distFromCenter < ar * 1.6) {
-          const topSpace = ay - ar, btmSpace = H - (ay + ar);
-          if (btmSpace >= topSpace && btmSpace > H * 0.22) {
-            avoidOffY = (ay + ar + H * 0.08) - H / 2;
-          } else if (topSpace > H * 0.22) {
-            avoidOffY = (ay - ar - H * 0.08) - H / 2;
-          } else {
-            const leftSpace = ax - ar, rightSpace = W - (ax + ar);
-            avoidOffX = rightSpace >= leftSpace ? (ax + ar + W * 0.08) - W / 2 : (ax - ar - W * 0.08) - W / 2;
-          }
-        }
-      }
-      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0) + avoidOffX, H / 2 + shy + P.off[1] + (cam.y || 0) + avoidOffY);
+      X.translate(W / 2 + shx + P.off[0] + (cam.x || 0), H / 2 + shy + P.off[1] + (cam.y || 0));
       if (cam.rot) X.rotate(cam.rot * J.DEG);
       if (cam.skx) X.transform(1, 0, Math.tan(cam.skx * J.DEG), 1, 0, 0);
       X.scale(cs * (cam.sx ?? 1), cs * (cam.sy ?? 1)); X.translate(-W / 2, -H / 2);
@@ -214,10 +205,14 @@ class Renderer {
       }
     }
     // ---------- depth: character foreground layer (lyrics pass behind character) ----------
-    if ((plan.depth === 'behind' || plan.depth === 'both') && J.depth && J.depth.ready(window._bgImgObj) && layer !== 'back') {
-      const img = window._bgImgObj;
-      const r = J.coverRect ? J.coverRect(img.naturalWidth || img.width, img.naturalHeight || img.height, W, H) : { x: 0, y: 0, w: W, h: H };
-      ctx.drawImage(J.depth.fg, r.x, r.y, r.w, r.h);
+    const fg = window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj) ? J.depth.fg : null);
+    if (fg && plan.depth !== 'off' && layer !== 'back') {
+      const isBehind = !plan.depth || plan.depth === 'behind' || (plan.depth === 'cross' && (mainCut ? mainCut.index % 2 === 0 : true));
+      if (isBehind) {
+        const iw = fg.naturalWidth || fg.width, ih = fg.naturalHeight || fg.height;
+        const r = window._charFgImgObj && J.charRect ? J.charRect(iw, ih, W, H) : (J.coverRect ? J.coverRect(iw, ih, W, H) : { x: 0, y: 0, w: W, h: H });
+        ctx.drawImage(fg, r.x, r.y, r.w, r.h);
+      }
     }
     // ---------- HUD ----------
     if (plan.hud && !opt.noHud && layer !== 'back') {

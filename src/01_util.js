@@ -184,28 +184,9 @@ J.fmtTime = (t, fps) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}${fps ? ':' + String(f).padStart(2, '0') : '.' + String(f).padStart(2, '0')}`;
 };
 
-/* calculate shift for an item to avoid the designated safe circle (e.g. character's face) */
-J.calcAvoidShift = (x, y, w, h, avoid, W, H) => {
-  if (!avoid || !avoid.enabled) return [0, 0];
-  const ax = avoid.x * W, ay = avoid.y * H;
-  const ar = Math.min(W, H) * (avoid.r || 0.2);
-  const re = ar + Math.max(w || 0, h || 0) * 0.48 + Math.min(W, H) * 0.04;
-  let dx = x - ax, dy = y - ay;
-  let dist = Math.hypot(dx, dy);
-  if (dist >= re) return [0, 0];
-  if (dist < 1e-3) {
-    const topSpace = ay, btmSpace = H - ay;
-    dy = btmSpace >= topSpace ? 1 : -1;
-    dx = 0; dist = 1;
-  }
-  const push = re - dist;
-  const ux = dx / dist, uy = dy / dist;
-  let sx = ux * push, sy = uy * push;
-  const marginX = W * 0.06, marginY = H * 0.06;
-  if (y + sy > H - marginY && uy > 0) {
-    sy = -(ay - (y - re));
-  } else if (y + sy < marginY && uy < 0) {
-    sy = (ay + re) - y;
-  }
-  return [sx, sy];
+/* positioning for standalone character artwork (anchored bottom-center) */
+J.charRect = (iw, ih, W, H) => {
+  const k = Math.min((W * 0.88) / Math.max(1, iw), (H * 0.94) / Math.max(1, ih));
+  const w = iw * k, h = ih * k;
+  return { x: (W - w) / 2, y: H - h, w, h };
 };
