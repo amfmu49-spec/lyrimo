@@ -151,6 +151,70 @@ J.STYLES = {
 };
 J.STYLE_ORDER = ['noir', 'crimson', 'caution', 'magenta', 'paper', 'hud', 'mint', 'specimen', 'transit', 'blueprint', 'rouge', 'mono'];
 
+/* colour tone presets: warm (暖色), cool (寒色), mono (モノトーン) */
+J.COLOR_TONES = {
+  warm: {
+    name: '暖色系',
+    hint: '赤・橙・黄・コーラル等の温かみのある配色',
+    dark: [
+      { fg: '#FFF5EB', sub: '#E5A882', accent: '#FF7A29', accent2: '#FFAA33', ghostA: '#FF4A36', ghostB: '#FFB830' },
+      { fg: '#FFF0F3', sub: '#D998A8', accent: '#FF3B69', accent2: '#FF88A5', ghostA: '#FF3B69', ghostB: '#FFA85C' },
+      { fg: '#FFF9E6', sub: '#D6A865', accent: '#FF9E1B', accent2: '#FF4500', ghostA: '#FF3300', ghostB: '#FFCC00' },
+      { fg: '#FFF2F2', sub: '#DB8888', accent: '#FF2A45', accent2: '#FF7A59', ghostA: '#FF1A35', ghostB: '#FFA64D' },
+    ],
+    light: [
+      { fg: '#4A1D0E', sub: '#8C4830', accent: '#C83B14', accent2: '#8A2000', ghostA: '#D92A14', ghostB: '#C87214' },
+      { fg: '#3D0E1E', sub: '#7D304B', accent: '#A6143F', accent2: '#680E27', ghostA: '#B81440', ghostB: '#A03070' },
+      { fg: '#3B2314', sub: '#7A5239', accent: '#B84514', accent2: '#D96520', ghostA: '#C23010', ghostB: '#B87A14' },
+    ]
+  },
+  cool: {
+    name: '寒色系',
+    hint: '青・水色・シアン・紫等のクールな配色',
+    dark: [
+      { fg: '#E6FAFF', sub: '#7DC4D9', accent: '#00E5FF', accent2: '#3D8BFF', ghostA: '#00E5FF', ghostB: '#3B6BFF' },
+      { fg: '#EDF4FF', sub: '#85A8D6', accent: '#2979FF', accent2: '#00D9FF', ghostA: '#1A66FF', ghostB: '#00E1D9' },
+      { fg: '#E8FFF7', sub: '#7AD4B8', accent: '#00E676', accent2: '#00B0FF', ghostA: '#00E699', ghostB: '#00A6FF' },
+      { fg: '#F3E8FF', sub: '#B58AE6', accent: '#A855F7', accent2: '#38BDF8', ghostA: '#A855F7', ghostB: '#06B6D4' },
+    ],
+    light: [
+      { fg: '#0A1833', sub: '#2E4C7A', accent: '#0052CC', accent2: '#0080FF', ghostA: '#0047BA', ghostB: '#0085B8' },
+      { fg: '#06202B', sub: '#1E536B', accent: '#007A99', accent2: '#0E8585', ghostA: '#00708C', ghostB: '#1475A8' },
+      { fg: '#1A0E38', sub: '#4C3580', accent: '#5E2CA8', accent2: '#2045A8', ghostA: '#652AB8', ghostB: '#1C58B8' },
+    ]
+  },
+  mono: {
+    name: 'モノトーン',
+    hint: '白・黒・グレーの洗練された無彩色',
+    dark: [
+      { fg: '#FFFFFF', sub: '#B4B9C2', accent: '#FFFFFF', accent2: '#80858F', ink: '#FFFFFF', ghostA: '#D0D4DC', ghostB: '#686D78' },
+    ],
+    light: [
+      { fg: '#0E0F12', sub: '#52555C', accent: '#0E0F12', accent2: '#35373B', ink: '#0E0F12', ghostA: '#555861', ghostB: '#8E929C' },
+    ]
+  }
+};
+
+J.applyColorTone = (st, tone, seed = 0) => {
+  const t = J.COLOR_TONES[tone];
+  if (!t) return;
+  st.schemes = st.schemes.map((s, idx) => {
+    const o = Object.assign({}, s);
+    const dark = J.lum(s.bg) < 0.5;
+    const pool = dark ? t.dark : t.light;
+    const pick = pool[Math.abs((seed + idx) % pool.length)];
+    o.fg = J.fitContrast(pick.fg, s.bg, 3.8);
+    o.sub = J.fitContrast(pick.sub, s.bg, 2.3);
+    o.accent = J.fitContrast(pick.accent, s.bg, 2.8);
+    o.accent2 = J.fitContrast(pick.accent2 || pick.accent, s.bg, 2.0);
+    o.ink = pick.ink ? (dark ? '#FFFFFF' : '#000000') : o.fg;
+    o.ghostA = pick.ghostA;
+    o.ghostB = pick.ghostB;
+    if (s.grad) o.grad = [o.accent, J.mix(o.accent, s.bg, 0.7)];
+    return o;
+  });
+};
+
 /* resolve style + user colour/font overrides into an effective style */
 J.resolveStyle = (project) => {
   const base = J.STYLES[project.style] || J.STYLES.noir;
@@ -169,6 +233,10 @@ J.resolveStyle = (project) => {
       if (ov.accent && s.grad) o.grad = [J.fitContrast(ov.accent, s.bg, 2.4), J.mix(ov.accent, '#000000', 0.7)];
       return o;
     });
+  }
+  const tone = project.colorTone || (project.colors && project.colors.tone) || 'auto';
+  if (tone && tone !== 'auto' && J.COLOR_TONES && J.COLOR_TONES[tone]) {
+    J.applyColorTone(st, tone, project.seed || 0);
   }
   const fo = project.fonts || {};
   for (const role of ['display', 'serif', 'body']) if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];

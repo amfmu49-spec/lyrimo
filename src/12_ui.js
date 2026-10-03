@@ -580,11 +580,45 @@ function applyGenre(g) {
   remember();
   const preset = GENRE_PRESETS[g] || GENRE_PRESETS.auto;
   const r = preset.apply();
+  if (currentColorTone && currentColorTone !== 'auto') r.colorTone = currentColorTone;
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
   const genreLabel = g === 'auto' ? 'おまかせ' : preset.name;
-  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  const toneLabel = (r.colorTone && r.colorTone !== 'auto' && J.COLOR_TONES[r.colorTone]) ? ` (${J.COLOR_TONES[r.colorTone].name})` : '';
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}${toneLabel}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
+}
+
+let currentColorTone = 'auto';
+
+function applyColorToneUI(tone) {
+  if (S.exporting || S.tap) return;
+  remember();
+  currentColorTone = tone;
+  S.project.colorTone = tone;
+  syncUI(); replan(); commit();
+  const label = tone === 'auto' ? 'おまかせ（標準配色）' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].name : tone);
+  toast(`文字色：${label}に設定`);
+  S.need = true; draw();
+}
+
+function initColorToneSelector() {
+  const container = document.getElementById('colorToneList');
+  if (!container) return;
+  const hintEl = document.getElementById('colorToneHint');
+  container.querySelectorAll('.amuvi-genre-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tone = btn.dataset.tone;
+      if (!tone) return;
+      currentColorTone = tone;
+      container.querySelectorAll('.amuvi-genre-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (hintEl) {
+        hintEl.textContent = tone === 'auto' ? 'スタイルの標準配色' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
+      }
+      applyColorToneUI(tone);
+    });
+  });
 }
 
 function initGenreSelector() {
@@ -610,10 +644,12 @@ function omakase() {
   remember();
   const preset = GENRE_PRESETS[currentGenre] || GENRE_PRESETS.auto;
   const r = preset.apply();
+  if (currentColorTone && currentColorTone !== 'auto') r.colorTone = currentColorTone;
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
   const genreLabel = currentGenre === 'auto' ? 'おまかせ' : preset.name;
-  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  const toneLabel = (r.colorTone && r.colorTone !== 'auto' && J.COLOR_TONES[r.colorTone]) ? ` (${J.COLOR_TONES[r.colorTone].name})` : '';
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}${toneLabel}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -963,6 +999,18 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
+  const tone = S.project.colorTone || 'auto';
+  currentColorTone = tone;
+  const cList = document.getElementById('colorToneList');
+  if (cList) {
+    cList.querySelectorAll('.amuvi-genre-chip').forEach(b => {
+      b.classList.toggle('active', b.dataset.tone === tone);
+    });
+  }
+  const cHint = document.getElementById('colorToneHint');
+  if (cHint) {
+    cHint.textContent = tone === 'auto' ? 'スタイルの標準配色' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
+  }
 }
 
 /* ---------------- wiring ---------------- */
@@ -1191,6 +1239,7 @@ function boot() {
   if (S.bgImageUrl) { window._bgImgObj = new Image(); window._bgImgObj.src = S.bgImageUrl; }
   bind(); initVolume(); syncUI(); replan();
   initGenreSelector();
+  initColorToneSelector();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   

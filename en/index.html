@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.2.0 — Lyric Motion Video Maker</title>
+<title>LYRIMO v3.3.0 — Lyric Motion Video Maker</title>
 <meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.2.0 — Lyric Motion Video Maker">
+<meta property="og:title" content="LYRIMO v3.3.0 — Lyric Motion Video Maker">
 <meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta name="twitter:card" content="summary">
@@ -346,7 +346,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.2.0</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.3.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="license情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -476,6 +476,18 @@ body {
               <button type="button" class="amuvi-genre-chip" data-genre="cyber">⚡ サイバー</button>
               <button type="button" class="amuvi-genre-chip" data-genre="chill">☕ チル</button>
               <button type="button" class="amuvi-genre-chip" data-genre="wa">🌸 JP風</button>
+            </div>
+          </div>
+          <div class="amuvi-genre-container" style="margin-top:10px;">
+            <div class="amuvi-genre-header">
+              <span class="amuvi-genre-title">🎨 Text color palette</span>
+              <span id="colorToneHint" class="amuvi-genre-desc">Default style palette</span>
+            </div>
+            <div class="amuvi-genre-list" id="colorToneList">
+              <button type="button" class="amuvi-genre-chip active" data-tone="auto">🎲 Randomize</button>
+              <button type="button" class="amuvi-genre-chip" data-tone="warm">🔥 Warm tones</button>
+              <button type="button" class="amuvi-genre-chip" data-tone="cool">❄️ Cool tones</button>
+              <button type="button" class="amuvi-genre-chip" data-tone="mono">⚪ Monochrome</button>
             </div>
           </div>
           <button id="btnOmakaseBig" class="omakase amuvi-omakase-btn">✨ AI Randomize生成 ✨</button>
@@ -1748,6 +1760,70 @@ J.STYLES = {
 };
 J.STYLE_ORDER = ['noir', 'crimson', 'caution', 'magenta', 'paper', 'hud', 'mint', 'specimen', 'transit', 'blueprint', 'rouge', 'mono'];
 
+/* colour tone presets: warm (暖色), cool (寒色), mono (モノトーン) */
+J.COLOR_TONES = {
+  warm: {
+    name: '暖色系',
+    hint: '赤・橙・黄・コーラル等の温かみのある配色',
+    dark: [
+      { fg: '#FFF5EB', sub: '#E5A882', accent: '#FF7A29', accent2: '#FFAA33', ghostA: '#FF4A36', ghostB: '#FFB830' },
+      { fg: '#FFF0F3', sub: '#D998A8', accent: '#FF3B69', accent2: '#FF88A5', ghostA: '#FF3B69', ghostB: '#FFA85C' },
+      { fg: '#FFF9E6', sub: '#D6A865', accent: '#FF9E1B', accent2: '#FF4500', ghostA: '#FF3300', ghostB: '#FFCC00' },
+      { fg: '#FFF2F2', sub: '#DB8888', accent: '#FF2A45', accent2: '#FF7A59', ghostA: '#FF1A35', ghostB: '#FFA64D' },
+    ],
+    light: [
+      { fg: '#4A1D0E', sub: '#8C4830', accent: '#C83B14', accent2: '#8A2000', ghostA: '#D92A14', ghostB: '#C87214' },
+      { fg: '#3D0E1E', sub: '#7D304B', accent: '#A6143F', accent2: '#680E27', ghostA: '#B81440', ghostB: '#A03070' },
+      { fg: '#3B2314', sub: '#7A5239', accent: '#B84514', accent2: '#D96520', ghostA: '#C23010', ghostB: '#B87A14' },
+    ]
+  },
+  cool: {
+    name: '寒色系',
+    hint: '青・水色・シアン・紫等のクールな配色',
+    dark: [
+      { fg: '#E6FAFF', sub: '#7DC4D9', accent: '#00E5FF', accent2: '#3D8BFF', ghostA: '#00E5FF', ghostB: '#3B6BFF' },
+      { fg: '#EDF4FF', sub: '#85A8D6', accent: '#2979FF', accent2: '#00D9FF', ghostA: '#1A66FF', ghostB: '#00E1D9' },
+      { fg: '#E8FFF7', sub: '#7AD4B8', accent: '#00E676', accent2: '#00B0FF', ghostA: '#00E699', ghostB: '#00A6FF' },
+      { fg: '#F3E8FF', sub: '#B58AE6', accent: '#A855F7', accent2: '#38BDF8', ghostA: '#A855F7', ghostB: '#06B6D4' },
+    ],
+    light: [
+      { fg: '#0A1833', sub: '#2E4C7A', accent: '#0052CC', accent2: '#0080FF', ghostA: '#0047BA', ghostB: '#0085B8' },
+      { fg: '#06202B', sub: '#1E536B', accent: '#007A99', accent2: '#0E8585', ghostA: '#00708C', ghostB: '#1475A8' },
+      { fg: '#1A0E38', sub: '#4C3580', accent: '#5E2CA8', accent2: '#2045A8', ghostA: '#652AB8', ghostB: '#1C58B8' },
+    ]
+  },
+  mono: {
+    name: 'モノトーン',
+    hint: '白・黒・グレーの洗練された無彩色',
+    dark: [
+      { fg: '#FFFFFF', sub: '#B4B9C2', accent: '#FFFFFF', accent2: '#80858F', ink: '#FFFFFF', ghostA: '#D0D4DC', ghostB: '#686D78' },
+    ],
+    light: [
+      { fg: '#0E0F12', sub: '#52555C', accent: '#0E0F12', accent2: '#35373B', ink: '#0E0F12', ghostA: '#555861', ghostB: '#8E929C' },
+    ]
+  }
+};
+
+J.applyColorTone = (st, tone, seed = 0) => {
+  const t = J.COLOR_TONES[tone];
+  if (!t) return;
+  st.schemes = st.schemes.map((s, idx) => {
+    const o = Object.assign({}, s);
+    const dark = J.lum(s.bg) < 0.5;
+    const pool = dark ? t.dark : t.light;
+    const pick = pool[Math.abs((seed + idx) % pool.length)];
+    o.fg = J.fitContrast(pick.fg, s.bg, 3.8);
+    o.sub = J.fitContrast(pick.sub, s.bg, 2.3);
+    o.accent = J.fitContrast(pick.accent, s.bg, 2.8);
+    o.accent2 = J.fitContrast(pick.accent2 || pick.accent, s.bg, 2.0);
+    o.ink = pick.ink ? (dark ? '#FFFFFF' : '#000000') : o.fg;
+    o.ghostA = pick.ghostA;
+    o.ghostB = pick.ghostB;
+    if (s.grad) o.grad = [o.accent, J.mix(o.accent, s.bg, 0.7)];
+    return o;
+  });
+};
+
 /* resolve style + user colour/font overrides into an effective style */
 J.resolveStyle = (project) => {
   const base = J.STYLES[project.style] || J.STYLES.noir;
@@ -1766,6 +1842,10 @@ J.resolveStyle = (project) => {
       if (ov.accent && s.grad) o.grad = [J.fitContrast(ov.accent, s.bg, 2.4), J.mix(ov.accent, '#000000', 0.7)];
       return o;
     });
+  }
+  const tone = project.colorTone || (project.colors && project.colors.tone) || 'auto';
+  if (tone && tone !== 'auto' && J.COLOR_TONES && J.COLOR_TONES[tone]) {
+    J.applyColorTone(st, tone, project.seed || 0);
   }
   const fo = project.fonts || {};
   for (const role of ['display', 'serif', 'body']) if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];
@@ -3219,6 +3299,7 @@ J.defaultProject = () => ({
   enabled: Object.fromEntries(J.GROUP_KEYS.map(g => [g, Object.fromEntries(J.order(g).map(k => [k, true]))])),
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
+  colorTone: 'auto',
   colors: { enabled: false },
   fonts: {},
 });
@@ -30248,11 +30329,45 @@ function applyGenre(g) {
   remember();
   const preset = GENRE_PRESETS[g] || GENRE_PRESETS.auto;
   const r = preset.apply();
+  if (currentColorTone && currentColorTone !== 'auto') r.colorTone = currentColorTone;
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
   const genreLabel = g === 'auto' ? 'おまかせ' : preset.name;
-  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  const toneLabel = (r.colorTone && r.colorTone !== 'auto' && J.COLOR_TONES[r.colorTone]) ? ` (${J.COLOR_TONES[r.colorTone].name})` : '';
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}${toneLabel}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
+}
+
+let currentColorTone = 'auto';
+
+function applyColorToneUI(tone) {
+  if (S.exporting || S.tap) return;
+  remember();
+  currentColorTone = tone;
+  S.project.colorTone = tone;
+  syncUI(); replan(); commit();
+  const label = tone === 'auto' ? 'おまかせ（標準Palette）' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].name : tone);
+  toast(`Text色：${label}に設定`);
+  S.need = true; draw();
+}
+
+function initColorToneSelector() {
+  const container = document.getElementById('colorToneList');
+  if (!container) return;
+  const hintEl = document.getElementById('colorToneHint');
+  container.querySelectorAll('.amuvi-genre-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tone = btn.dataset.tone;
+      if (!tone) return;
+      currentColorTone = tone;
+      container.querySelectorAll('.amuvi-genre-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (hintEl) {
+        hintEl.textContent = tone === 'auto' ? 'Styleの標準Palette' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
+      }
+      applyColorToneUI(tone);
+    });
+  });
 }
 
 function initGenreSelector() {
@@ -30278,10 +30393,12 @@ function omakase() {
   remember();
   const preset = GENRE_PRESETS[currentGenre] || GENRE_PRESETS.auto;
   const r = preset.apply();
+  if (currentColorTone && currentColorTone !== 'auto') r.colorTone = currentColorTone;
   Object.assign(S.project, r);
   fontKey = ''; syncUI(); replan(); commit();
   const genreLabel = currentGenre === 'auto' ? 'おまかせ' : preset.name;
-  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
+  const toneLabel = (r.colorTone && r.colorTone !== 'auto' && J.COLOR_TONES[r.colorTone]) ? ` (${J.COLOR_TONES[r.colorTone].name})` : '';
+  toast(`${genreLabel}：${J.STYLES[r.style].name} × ${J.MOODS[r.mood].name}${toneLabel}`, r.colors.accentOn ? [r.colors.accent, r.colors.ghostA, r.colors.ghostB] : null);
   restartPreview();
 }
 // change just one aspect of the current look
@@ -30631,6 +30748,18 @@ function syncUI() {
   document.querySelectorAll('.extra-toggle').forEach(el => { el.checked = S.project.extra === true; });
   $('lyricLang').value = J.LANG_LABEL[S.project.lang] ? S.project.lang : 'auto'; langNote();
   renderFontRoles(); renderColors(); renderFx(); renderTech(); syncOut(); drawStyleGrid();
+  const tone = S.project.colorTone || 'auto';
+  currentColorTone = tone;
+  const cList = document.getElementById('colorToneList');
+  if (cList) {
+    cList.querySelectorAll('.amuvi-genre-chip').forEach(b => {
+      b.classList.toggle('active', b.dataset.tone === tone);
+    });
+  }
+  const cHint = document.getElementById('colorToneHint');
+  if (cHint) {
+    cHint.textContent = tone === 'auto' ? 'Styleの標準Palette' : (J.COLOR_TONES[tone] ? J.COLOR_TONES[tone].hint : '');
+  }
 }
 
 /* ---------------- wiring ---------------- */
@@ -30859,6 +30988,7 @@ function boot() {
   if (S.bgImageUrl) { window._bgImgObj = new Image(); window._bgImgObj.src = S.bgImageUrl; }
   bind(); initVolume(); syncUI(); replan();
   initGenreSelector();
+  initColorToneSelector();
   let mode = 'easy'; try { mode = localStorage.getItem('jizura.mode') || 'easy'; } catch (e) {}
   setMode(mode); commit();
   
