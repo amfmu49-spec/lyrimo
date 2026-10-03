@@ -2,7 +2,7 @@
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.1.7</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.2.0</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="ライセンス情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -169,8 +169,15 @@
                 <option value="540">540p (超軽量・省メモリ)</option>
               </select>
             </label>
+            <label class="field" style="flex:1; min-width:140px;">動きのなめらかさ
+              <select id="eMotionSmooth" class="amuvi-select">
+                <option value="smooth60">超なめらか (60fps・ヌルヌル)</option>
+                <option value="smooth30">標準なめらか (30fps)</option>
+                <option value="anime">アニメ調 (2コマ打ち・文字PV風)</option>
+              </select>
+            </label>
             <div style="display:none;">
-              <select id="eFps"><option>30</option></select>
+              <select id="eFps"><option value="60">60</option><option value="30">30</option><option value="24">24</option></select>
               <select id="eKey"><option value="off"></option><option value="green"></option><option value="black"></option></select>
             </div>
           </div>
@@ -208,7 +215,7 @@
         <input id="tExtra" type="checkbox" checked><input id="tWa" type="checkbox" checked><input id="techFilter"><span id="techTotal"></span><div id="techLists"></div>
       </div>
       <div class="tabpane" data-pane="out" style="display:none;">
-        <select id="outAspect"><option value="16:9"></option></select><select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="540">540p</option></select><select id="outFps"><option>30</option></select><select id="outQuality"><option value="standard"></option></select><select id="outKey"><option value="off"></option></select><input id="outAudio" type="checkbox" checked><button id="btnMP4"></button><button id="btnPNG"></button><button id="btnPNGA"></button><button id="btnPNGL"></button>
+        <select id="outAspect"><option value="16:9"></option></select><select id="outRes"><option value="720">720p</option><option value="1080">1080p</option><option value="540">540p</option></select><select id="outFps"><option value="60">60</option><option value="30">30</option><option value="24">24</option></select><select id="outQuality"><option value="standard"></option></select><select id="outKey"><option value="off"></option></select><input id="outAudio" type="checkbox" checked><button id="btnMP4"></button><button id="btnPNG"></button><button id="btnPNGA"></button><button id="btnPNGL"></button>
       </div>
     </section>
   </main>

@@ -742,6 +742,17 @@ function renderTech() {
 function syncOut() {
   $('outAspect').value = S.project.aspect; $('outRes').value = String(S.project.res); $('outFps').value = String(S.project.fps);
   $('eAspect').value = S.project.aspect; $('eRes').value = String(S.project.res); $('eFps').value = String(S.project.fps);
+  if ($('eMotionSmooth')) {
+    if (S.project.motionSmooth) {
+      $('eMotionSmooth').value = S.project.motionSmooth;
+    } else if (S.project.fx && (S.project.fx.koma > 0 || S.project.fx.onTwos)) {
+      $('eMotionSmooth').value = 'anime';
+    } else if (S.project.fps >= 60) {
+      $('eMotionSmooth').value = 'smooth60';
+    } else {
+      $('eMotionSmooth').value = 'smooth30';
+    }
+  }
   $('outQuality').value = S.project.quality || 'high';
   const incA = S.project.includeAudio !== false;
   $('outAudio').checked = incA;
@@ -1073,6 +1084,35 @@ function bind() {
   ['outAspect', 'eAspect'].forEach(id => $(id).addEventListener('change', e => { S.project.aspect = e.target.value; syncOut(); replan(); codecNote(); }));
   ['outRes', 'eRes'].forEach(id => $(id).addEventListener('change', e => { S.project.res = +e.target.value; syncOut(); autosave(); codecNote(); }));
   ['outFps', 'eFps'].forEach(id => $(id).addEventListener('change', e => { S.project.fps = +e.target.value; syncOut(); replan(); codecNote(); }));
+  const ems = $('eMotionSmooth');
+  if (ems) {
+    ems.addEventListener('change', e => {
+      const mode = e.target.value;
+      S.project.motionSmooth = mode;
+      if (mode === 'smooth60') {
+        S.project.fps = 60;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：超なめらか (60fps・ヌルヌル)');
+      } else if (mode === 'smooth30') {
+        S.project.fps = 30;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：標準なめらか (30fps)');
+      } else if (mode === 'anime') {
+        S.project.fps = 24;
+        S.project.fx.koma = 12;
+        S.project.fx.onTwos = true;
+        toast('動き：アニメ調 (2コマ打ち・文字PV風)');
+      }
+      S.project.mood = null;
+      syncOut();
+      replan();
+      codecNote();
+      S.need = true;
+      draw();
+    });
+  }
   $('outQuality').addEventListener('change', e => { S.project.quality = e.target.value; autosave(); });
   ['outKey', 'eKey'].forEach(id => $(id).addEventListener('change', e => {
     S.project.keyBg = e.target.value; syncOut(); replan(); flushSave();
