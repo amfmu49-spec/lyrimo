@@ -93,7 +93,7 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   // fastStart: false writes compressed chunks directly to target and frees chunk memory immediately,
   // preventing browser out-of-memory tab reloads on smartphones.
   const target = new Mp4Muxer.ArrayBufferTarget();
-  const muxOpts = { target, video: { codec: vc.mux, width: w, height: h, frameRate: fps }, fastStart: 'in-memory', firstTimestampBehavior: 'offset' };
+  const muxOpts = { target, video: { codec: vc.mux, width: w, height: h, frameRate: fps }, fastStart: false, firstTimestampBehavior: 'offset' };
   if (ac) muxOpts.audio = { codec: ac.mux, numberOfChannels: 2, sampleRate: ac.sr };
   const muxer = new Mp4Muxer.Muxer(muxOpts);
   let err = null;
@@ -212,7 +212,8 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
   }
 
   try {
-    const maxVencQueue = isMobile ? 2 : 4;
+    // 速度向上のため、PCの場合はエンコーダのキューサイズを増やして並列度を上げる
+    const maxVencQueue = isMobile ? 2 : 16;
     for (let i = 0; i < total; i++) {
       if (signal && signal.aborted) { try { venc.close(); } catch (e) {} throw new Error('キャンセルしました'); }
       if (err) throw err;
@@ -226,12 +227,13 @@ J.exportMP4 = async ({ plan, project, audio, quality = 'high', onProgress, signa
 
       while (venc.encodeQueueSize > maxVencQueue) {
         if (err) throw err;
-        await new Promise(r => setTimeout(r, 6));
+        await new Promise(r => setTimeout(r, 2));
       }
-      if (i % (isMobile ? 1 : 3) === 0 || i === total - 1) {
+      // PCでのsetTimeout(0)呼び出しオーバーヘッドを減らすため、更新頻度を3フレームから15フレームに間引く
+      if (i % (isMobile ? 2 : 15) === 0 || i === total - 1) {
         onProgress && onProgress((i + 1) / total * 0.95, `映像フレーム ${i + 1}/${total}`);
         // Yield execution to allow mobile browser garbage collection
-        await new Promise(r => setTimeout(r, isMobile ? 6 : 0));
+        await new Promise(r => setTimeout(r, isMobile ? 4 : 0));
       }
     }
   } finally {
