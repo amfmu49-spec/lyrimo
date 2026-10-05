@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LYRIMO v3.6.2 — Lyric Motion Video Maker</title>
+<title>LYRIMO v3.6.3 — Lyric Motion Video Maker</title>
 <meta name="description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <link rel="canonical" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <link rel="alternate" hreflang="ja" href="https://amfmu49-spec.github.io/lyrimo/">
 <link rel="alternate" hreflang="en" href="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="LYRIMO v3.6.2 — Lyric Motion Video Maker">
+<meta property="og:title" content="LYRIMO v3.6.3 — Lyric Motion Video Maker">
 <meta property="og:description" content="Turn lyrics into animated lyric videos in your browser and export MP4.">
 <meta property="og:url" content="https://amfmu49-spec.github.io/lyrimo/en/">
 <meta name="twitter:card" content="summary">
@@ -525,7 +525,7 @@ body {
   <header class="bar amuvi-header">
     <div class="brand" style="display:flex; align-items:center; gap:8px;">
       <img src="logo.png" alt="LYRIMO" style="height:48px;">
-      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.6.2</span>
+      <span class="amuvi-version" style="font-size:11px; font-weight:700; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border-radius:10px; padding:2px 8px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(99,102,241,0.3);">v3.6.3</span>
       <button onclick="document.getElementById('licenseModal').showModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:16px; margin-left:12px; padding:4px;" title="license情報">ℹ️</button>
       <button onclick="document.getElementById('tutorialModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="使い方（チュートリアル）">❓</button>
       <button onclick="document.getElementById('bookmarkletModal').showModal()" style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;" title="ブックマークレット">🔖</button>
@@ -747,9 +747,12 @@ body {
               <select id="eKey"><option value="off"></option><option value="green"></option><option value="black"></option></select>
             </div>
           </div>
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
             <label style="display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#e2e8f0; cursor:pointer;">
               <input id="eAudio" type="checkbox" checked style="accent-color:#8b5cf6; width:16px; height:16px; cursor:pointer;"> 🎵 音声を含めて書き出す
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#e2e8f0; cursor:pointer;">
+              <input id="eBlackBackUI" type="checkbox" style="accent-color:#8b5cf6; width:16px; height:16px; cursor:pointer;"> ⬛ Backgroundを黒(透過用)にする
             </label>
           </div>
           <div id="eAudioNote" style="font-size:11px; line-height:1.4; margin-bottom:12px; padding:6px 10px; border-radius:6px; background:#1e293b; border:1px solid #334155;"></div>
@@ -31082,6 +31085,7 @@ function syncOut() {
   if ($('eAudio')) $('eAudio').checked = incA;
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
+  if ($('eBlackBackUI')) $('eBlackBackUI').checked = (k === 'black');
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'Green screen' : 'Black background'}`;
@@ -31521,6 +31525,15 @@ function bind() {
     const el = $(id);
     if (el) el.addEventListener('change', e => { S.project.includeAudio = e.target.checked; syncOut(); autosave(); });
   });
+  const ebb = $('eBlackBackUI');
+  if (ebb) {
+    ebb.addEventListener('change', e => {
+      S.project.keyBg = e.target.checked ? 'black' : 'off';
+      syncOut(); replan(); flushSave();
+      const k = J.keyMode(S.project);
+      toast(k === 'black' ? 'Background：Black background（TextとEffectsのみ）' : 'Background：Style colors');
+    });
+  }
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));

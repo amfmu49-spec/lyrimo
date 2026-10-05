@@ -893,6 +893,7 @@ function syncOut() {
   if ($('eAudio')) $('eAudio').checked = incA;
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
+  if ($('eBlackBackUI')) $('eBlackBackUI').checked = (k === 'black');
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
@@ -1332,6 +1333,15 @@ function bind() {
     const el = $(id);
     if (el) el.addEventListener('change', e => { S.project.includeAudio = e.target.checked; syncOut(); autosave(); });
   });
+  const ebb = $('eBlackBackUI');
+  if (ebb) {
+    ebb.addEventListener('change', e => {
+      S.project.keyBg = e.target.checked ? 'black' : 'off';
+      syncOut(); replan(); flushSave();
+      const k = J.keyMode(S.project);
+      toast(k === 'black' ? '背景：ブラックバック（文字と演出のみ）' : '背景：通常（スタイルの配色）');
+    });
+  }
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
   $('btnPNG').addEventListener('click', () => runExport('png'));
   $('btnPNGA').addEventListener('click', () => runExport('pnga'));
