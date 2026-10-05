@@ -736,6 +736,8 @@ body {
             <label class="field" style="flex:1; min-width:140px;">Motion smoothness
               <select id="eMotionSmooth" class="amuvi-select">
                 <option value="smooth60">Ultra smooth (60fps)</option>
+                <option value="smooth50">ややなめらか (50fps)</option>
+                <option value="smooth45">中間なめらか (45fps)</option>
                 <option value="smooth30">Standard smooth (30fps)</option>
                 <option value="anime">Anime style (On twos / 12fps)</option>
               </select>
@@ -31066,6 +31068,10 @@ function syncOut() {
       $('eMotionSmooth').value = 'anime';
     } else if (S.project.fps >= 60) {
       $('eMotionSmooth').value = 'smooth60';
+    } else if (S.project.fps >= 50) {
+      $('eMotionSmooth').value = 'smooth50';
+    } else if (S.project.fps >= 45) {
+      $('eMotionSmooth').value = 'smooth45';
     } else {
       $('eMotionSmooth').value = 'smooth30';
     }
@@ -31476,6 +31482,16 @@ function bind() {
         S.project.fx.koma = 0;
         S.project.fx.onTwos = false;
         toast('動き：超なめらか (60fps · ヌルヌル)');
+      } else if (mode === 'smooth50') {
+        S.project.fps = 50;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：ややなめらか (50fps)');
+      } else if (mode === 'smooth45') {
+        S.project.fps = 45;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：中間なめらか (45fps)');
       } else if (mode === 'smooth30') {
         S.project.fps = 30;
         S.project.fx.koma = 0;

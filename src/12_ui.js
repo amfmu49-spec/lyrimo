@@ -879,6 +879,10 @@ function syncOut() {
       $('eMotionSmooth').value = 'anime';
     } else if (S.project.fps >= 60) {
       $('eMotionSmooth').value = 'smooth60';
+    } else if (S.project.fps >= 50) {
+      $('eMotionSmooth').value = 'smooth50';
+    } else if (S.project.fps >= 45) {
+      $('eMotionSmooth').value = 'smooth45';
     } else {
       $('eMotionSmooth').value = 'smooth30';
     }
@@ -1289,6 +1293,16 @@ function bind() {
         S.project.fx.koma = 0;
         S.project.fx.onTwos = false;
         toast('動き：超なめらか (60fps・ヌルヌル)');
+      } else if (mode === 'smooth50') {
+        S.project.fps = 50;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：ややなめらか (50fps)');
+      } else if (mode === 'smooth45') {
+        S.project.fps = 45;
+        S.project.fx.koma = 0;
+        S.project.fx.onTwos = false;
+        toast('動き：中間なめらか (45fps)');
       } else if (mode === 'smooth30') {
         S.project.fps = 30;
         S.project.fx.koma = 0;
