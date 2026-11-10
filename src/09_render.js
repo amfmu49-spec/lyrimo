@@ -94,6 +94,8 @@ class Renderer {
         ctx.drawImage(this.paper(W, H), 0, 0, W, H);
         ctx.filter = 'none'; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       }
+    }
+    if (!opt.transparent) {
       // depth: character behind text (when in cross 3D mode on alternating cuts)
       const fgBg = window._charFgImgObj || (J.depth && J.depth.ready(window._bgImgObj) ? J.depth.fg : null);
       if (fgBg && plan.depth && plan.depth !== 'off') {
@@ -222,7 +224,7 @@ class Renderer {
     ctx.restore();
     // ---------- post ----------
     if (!opt.noPost) this.post(ctx, plan, t, tq, step, sc, scale, opt, allowFilter);
-    if (key && !opt.noPost) this.keyFinish(ctx, key, opt);
+    if (key === 'green' && !opt.noPost) this.keyFinish(ctx, key, opt);
   }
 
   /* 合成用の背景: make the finished frame monochrome (white text + effects only) and put it on the key colour.
@@ -305,7 +307,7 @@ class Renderer {
     };
     env.poly = (pts, c, a = 1, g = true) => {
       const col = colOf(c, g); if (!col || a <= 0) return;
-      ctx.globalAlpha = a; ctx.fillStyle = col; ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+      ctx.globalAlpha = a; ctx.fillStyle = col; beginPathPoly(ctx, pts); ctx.fill(); ctx.globalAlpha = 1;
     };
     env.blob = (pts, c, a = 1, g = true) => {
       const col = colOf(c, g); if (!col || a <= 0) return;
@@ -474,6 +476,7 @@ class Renderer {
     ctx.restore();
   }
 }
+function beginPathPoly(ctx, pts) { ctx.beginPath(); pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath(); }
 /* beat context at time t: time since the previous beat, beat length and index */
 function beatAt(beats, t) {
   let lo = 0, hi = beats.length - 1, i = -1;

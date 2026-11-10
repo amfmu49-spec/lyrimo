@@ -157,10 +157,10 @@ J.COLOR_TONES = {
     name: '暖色系',
     hint: '赤・橙・黄・コーラル等の温かみのある配色',
     dark: [
-      { fg: '#FFF5EB', sub: '#E5A882', accent: '#FF7A29', accent2: '#FFAA33', ghostA: '#FF4A36', ghostB: '#FFB830' },
-      { fg: '#FFF0F3', sub: '#D998A8', accent: '#FF3B69', accent2: '#FF88A5', ghostA: '#FF3B69', ghostB: '#FFA85C' },
-      { fg: '#FFF9E6', sub: '#D6A865', accent: '#FF9E1B', accent2: '#FF4500', ghostA: '#FF3300', ghostB: '#FFCC00' },
-      { fg: '#FFF2F2', sub: '#DB8888', accent: '#FF2A45', accent2: '#FF7A59', ghostA: '#FF1A35', ghostB: '#FFA64D' },
+      { fg: '#FFB085', sub: '#E59A73', accent: '#FF6B1A', accent2: '#FFAA33', ghostA: '#FF4A36', ghostB: '#FFB830' },
+      { fg: '#FF94B2', sub: '#D9829B', accent: '#FF2E63', accent2: '#FF80A0', ghostA: '#FF3B69', ghostB: '#FFA85C' },
+      { fg: '#FFD466', sub: '#DEB052', accent: '#FF9500', accent2: '#FF4500', ghostA: '#FF3300', ghostB: '#FFCC00' },
+      { fg: '#FF8A8A', sub: '#DB7676', accent: '#FF2442', accent2: '#FF7A59', ghostA: '#FF1A35', ghostB: '#FFA64D' },
     ],
     light: [
       { fg: '#4A1D0E', sub: '#8C4830', accent: '#C83B14', accent2: '#8A2000', ghostA: '#D92A14', ghostB: '#C87214' },
@@ -172,10 +172,10 @@ J.COLOR_TONES = {
     name: '寒色系',
     hint: '青・水色・シアン・紫等のクールな配色',
     dark: [
-      { fg: '#E6FAFF', sub: '#7DC4D9', accent: '#00E5FF', accent2: '#3D8BFF', ghostA: '#00E5FF', ghostB: '#3B6BFF' },
-      { fg: '#EDF4FF', sub: '#85A8D6', accent: '#2979FF', accent2: '#00D9FF', ghostA: '#1A66FF', ghostB: '#00E1D9' },
-      { fg: '#E8FFF7', sub: '#7AD4B8', accent: '#00E676', accent2: '#00B0FF', ghostA: '#00E699', ghostB: '#00A6FF' },
-      { fg: '#F3E8FF', sub: '#B58AE6', accent: '#A855F7', accent2: '#38BDF8', ghostA: '#A855F7', ghostB: '#06B6D4' },
+      { fg: '#78ECFF', sub: '#6BC2D9', accent: '#00E5FF', accent2: '#3D8BFF', ghostA: '#00E5FF', ghostB: '#3B6BFF' },
+      { fg: '#8AB8FF', sub: '#79A0D9', accent: '#2979FF', accent2: '#00D9FF', ghostA: '#1A66FF', ghostB: '#00E1D9' },
+      { fg: '#6EF5C8', sub: '#6AD4B2', accent: '#00E676', accent2: '#00B0FF', ghostA: '#00E699', ghostB: '#00A6FF' },
+      { fg: '#C99BFF', sub: '#B082E6', accent: '#A855F7', accent2: '#38BDF8', ghostA: '#A855F7', ghostB: '#06B6D4' },
     ],
     light: [
       { fg: '#0A1833', sub: '#2E4C7A', accent: '#0052CC', accent2: '#0080FF', ghostA: '#0047BA', ghostB: '#0085B8' },
@@ -219,9 +219,14 @@ J.applyColorTone = (st, tone, seed = 0) => {
 J.resolveStyle = (project) => {
   const base = J.STYLES[project.style] || J.STYLES.noir;
   const st = JSON.parse(JSON.stringify(base));
+  const km = J.keyMode(project);
+  if (km === 'black') adaptBlackSchemes(st, project.style === 'mono');
   const ov = project.colors || {};
   // base colours (background / text) replace the main scheme only
-  if (ov.enabled) st.schemes[0] = Object.assign({}, st.schemes[0], pickDefined(ov, ['bg', 'fg', 'sub']));
+  if (ov.enabled) {
+    const picked = pickDefined(ov, km === 'black' ? ['fg', 'sub'] : ['bg', 'fg', 'sub']);
+    st.schemes[0] = Object.assign({}, st.schemes[0], picked);
+  }
   // accent + chromatic ghost colours apply to every scheme; accent is re-lit per background for contrast
   if (ov.accentOn) {
     st.schemes = st.schemes.map(s => {
@@ -240,21 +245,71 @@ J.resolveStyle = (project) => {
   }
   const fo = project.fonts || {};
   for (const role of ['display', 'serif', 'body']) if (fo[role] && J.FONTS[fo[role]]) st.fonts[role] = [fo[role]];
-  if (J.keyMode(project)) keyStyle(st);
+  if (km) keyStyle(st, km);
   return st;
 };
 /* ---- 合成用の背景（グリーンバック / ブラックバック） ----
-   Every scheme becomes white-on-black (so every part behaves as on a dark background), textures go away,
-   and the renderer turns the finished frame monochrome and — for green — screens it onto pure green.
-   Black stays the "empty" colour, so a keyer (green) or a screen / luma blend (black) gives the same result. */
+   black: background becomes pure #000000 while keeping style / colorTone colours vibrant and legible on black.
+   green: every scheme becomes white-on-black and the renderer screens the monochrome frame onto pure #00FF00. */
 J.KEY_BG = { green: '#00FF00', black: '#000000' };
 J.keyMode = project => (project && J.KEY_BG[project.keyBg] ? project.keyBg : null);
-function keyStyle(st) {
-  st.schemes = st.schemes.map(s => {
-    const o = { bg: '#000000', fg: '#FFFFFF', sub: '#D2D2D2', accent: '#FFFFFF', accent2: '#BDBDBD', ink: '#FFFFFF', dim: '#1E1E1E', ghostA: '#9A9A9A', ghostB: '#5E5E5E' };
-    if (s.grad) o.grad = ['#FFFFFF', '#A8A8A8'];
+function chromaOf(hex) {
+  const [, s, l] = J.toHsl(hex || '#000000');
+  return s * (1 - Math.abs(2 * l - 1));
+}
+function adaptBlackSchemes(st, isMono) {
+  st.schemes = st.schemes.map((s, idx) => {
+    const o = Object.assign({}, s);
+    const bgHasColor = chromaOf(s.bg) > 0.14;
+    const vividBg = bgHasColor ? J.fitContrast(s.bg, '#000000', 4.2) : null;
+    if (J.lum(o.fg) < 0.35 || (vividBg && chromaOf(o.fg) < 0.14)) {
+      o.fg = vividBg || (chromaOf(o.fg) > 0.14 ? J.fitContrast(o.fg, '#000000', 4.2) : (chromaOf(o.accent) > 0.14 ? J.fitContrast(o.accent, '#000000', 4.2) : '#F5EEEA'));
+    }
+    if (vividBg && (J.lum(o.accent) < 0.25 || chromaOf(o.accent) < 0.14)) o.accent = vividBg;
+    else o.accent = J.fitContrast(o.accent || o.fg, '#000000', 3.2);
+    if (vividBg && (!o.accent2 || J.lum(o.accent2) < 0.25 || chromaOf(o.accent2) < 0.14)) o.accent2 = J.fitContrast(J.mix(vividBg, '#FFFFFF', 0.25), '#000000', 2.8);
+    else o.accent2 = J.fitContrast(o.accent2 || o.accent, '#000000', 2.5);
+    if (vividBg && (J.lum(o.sub) < 0.30 || chromaOf(o.sub) < 0.12)) o.sub = J.fitContrast(J.mix(vividBg, '#FFFFFF', 0.35), '#000000', 2.8);
+    else o.sub = J.fitContrast(o.sub || '#B4B9C2', '#000000', 2.6);
+    if (vividBg && (J.lum(o.ink) < 0.30 || chromaOf(o.ink) < 0.14)) o.ink = vividBg;
+    else o.ink = J.fitContrast(o.ink || o.fg, '#000000', 3.8);
+    if (vividBg && chromaOf(o.ghostA) < 0.14) o.ghostA = vividBg;
+    else o.ghostA = J.fitContrast(o.ghostA || o.accent, '#000000', 2.0);
+    o.ghostB = J.fitContrast(o.ghostB || o.accent2 || o.accent, '#000000', 1.8);
+    if (!isMono && chromaOf(o.fg) < 0.14) {
+      const tintSrc = (idx % 2 === 1 && chromaOf(o.accent2) > 0.14) ? o.accent2 : (chromaOf(o.accent) > 0.14 ? o.accent : (chromaOf(o.ghostA) > 0.14 ? o.ghostA : o.ghostB));
+      if (chromaOf(tintSrc) > 0.14) {
+        o.fg = J.fitContrast(J.mix('#FFFFFF', tintSrc, idx % 2 === 1 ? 0.78 : 0.58), '#000000', 4.2);
+      } else {
+        o.fg = J.fitContrast(o.fg, '#000000', 4.0);
+      }
+    } else {
+      o.fg = J.fitContrast(o.fg, '#000000', 4.0);
+    }
+    o.bg = '#000000';
+    o.dim = '#1E1E22';
+    if (s.grad) o.grad = [o.accent, J.mix(o.accent, '#000000', 0.65)];
     return o;
   });
+}
+function keyStyle(st, mode) {
+  if (mode === 'green') {
+    st.schemes = st.schemes.map(s => {
+      const o = { bg: '#000000', fg: '#FFFFFF', sub: '#D2D2D2', accent: '#FFFFFF', accent2: '#BDBDBD', ink: '#FFFFFF', dim: '#1E1E1E', ghostA: '#9A9A9A', ghostB: '#5E5E5E' };
+      if (s.grad) o.grad = ['#FFFFFF', '#A8A8A8'];
+      return o;
+    });
+  } else {
+    st.schemes = st.schemes.map(s => Object.assign({}, s, {
+      bg: '#000000',
+      fg: J.fitContrast(s.fg || '#FFFFFF', '#000000', 3.8),
+      sub: J.fitContrast(s.sub || '#D2D2D2', '#000000', 2.3),
+      accent: J.fitContrast(s.accent || s.fg || '#FFFFFF', '#000000', 2.8),
+      accent2: J.fitContrast(s.accent2 || s.accent || '#BDBDBD', '#000000', 2.0),
+      ink: J.fitContrast(s.ink || s.fg || '#FFFFFF', '#000000', 3.5),
+      dim: '#1E1E22',
+    }));
+  }
   st.texture = { grain: 0, paper: 0, scan: 0 };
   st.key = true;
 }
