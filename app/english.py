@@ -70,6 +70,7 @@ BODY = {
     '🎬 文字PV': '🎬 Lyric PV',
     '💥 キネティック': '💥 Kinetic',
     '👻 ホラー': '👻 Horror',
+    '🚫 曲間のカウントダウン(間奏演出)を無しにする': '🚫 Hide interlude countdown',
     'スタイルの標準配色': 'Default style palette',
     '暖色系': 'Warm tones',
     '寒色系': 'Cool tones',

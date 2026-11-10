@@ -36,6 +36,7 @@ J.defaultProject = () => ({
   timing: { bpm: 0, offset: 0.4, snap: true, tail: 0.9, lineTimes: {}, lineScale: 1 },
   overrides: {},
   locks: { tech: {}, params: {} },   // groups and values Randomize / Shuffle must not change (UI side only)
+  noInterlude: false,
   colorTone: 'auto',
   depth: 'behind',
   colors: { enabled: false },
@@ -378,6 +379,7 @@ J.plan = (project, audio) => {
     const rng = J.rng(lineSeed);
     if (ln.interlude) {                                    // [間奏]: background, decorations and screen effects only
       plan.lines.push({ index: li, src: ln.src, lrc: ln.lrc, text: '', interlude: true, secs: ln.secs, start: s, end: e, visEnd: e, note: null, impact: false, emph: [], chunks: [], seed: lineSeed });
+      if (project.noInterlude) return;
       const bg = ov.bg && J.BG[ov.bg] ? ov.bg : pickBg(rng, st, en, fx, bgHistory); bgHistory.push(bg);
       const dur = e - s, showTitle = dur >= 6 && !!(title || artist);
       plan.cuts.push(makeCut({ text: '', lineText: '', line: li, start: s, end: e, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.4, outDur: 0.4,
@@ -635,7 +637,7 @@ J.plan = (project, audio) => {
     });
     // interlude in long gaps
     const nextStart = li < parsed.lines.length - 1 ? tm.starts[li + 1] : null;
-    if (nextStart != null && nextStart - visEnd > 1.3 && !parsed.lines[li + 1].interlude) {
+    if (!project.noInterlude && nextStart != null && nextStart - visEnd > 1.3 && !parsed.lines[li + 1].interlude) {
       const r2 = J.rng(J.h(lineSeed, 404));
       plan.cuts.push(makeCut({ text: title || '', lineText: '', line: li, start: visEnd, end: nextStart, layout: 'interlude', enter: 'blur', exit: 'blur', hold: 'still', inDur: 0.3, outDur: 0.3, params: J.LAYOUTS.interlude.plan(r2), decor: pickDecor(r2, st, en, Object.assign({}, fx, { decor: 1 }), 'interlude'), scheme: schemeIdx, seed: J.h(lineSeed, 405) }));
     }

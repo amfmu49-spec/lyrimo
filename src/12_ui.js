@@ -931,6 +931,7 @@ function syncOut() {
   const k = J.keyMode(S.project) || 'off';
   $('outKey').value = k; $('eKey').value = k;
   if ($('eBlackBackUI')) $('eBlackBackUI').checked = (k === 'black');
+  if ($('eNoInterlude')) $('eNoInterlude').checked = !!S.project.noInterlude;
   const kb = $('keyBadge');
   kb.hidden = k === 'off';
   if (k !== 'off') kb.innerHTML = `<i style="background:${J.KEY_BG[k]}"></i>${k === 'green' ? 'グリーンバック' : 'ブラックバック'}`;
@@ -1377,6 +1378,14 @@ function bind() {
       syncOut(); replan(); flushSave();
       const k = J.keyMode(S.project);
       toast(k === 'black' ? '背景：ブラックバック（文字と演出のみ）' : '背景：通常（スタイルの配色）');
+    });
+  }
+  const eni = $('eNoInterlude');
+  if (eni) {
+    eni.addEventListener('change', e => {
+      S.project.noInterlude = e.target.checked;
+      syncOut(); replan(); flushSave();
+      toast(S.project.noInterlude ? '曲間のカウントダウン演出：なし' : '曲間のカウントダウン演出：あり');
     });
   }
   $('btnMP4').addEventListener('click', () => runExport('mp4'));
