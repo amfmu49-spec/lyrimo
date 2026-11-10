@@ -116,7 +116,7 @@ function split2(word, force) {
     const a = chars[c - 1], b = chars[c];
     if (!force && ((c === 1 && !J.isKanji(a)) || (c === n - 1 && !J.isKanji(b)))) continue;
     let s = -Math.abs(c - n / 2) * 0.9;
-    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー')) s += 5;
+    if (a === ' ' || a === '　' || (J.isPunct(a) && a !== 'ー' && !(J.isOpenPunct && J.isOpenPunct(a)))) s += 5;
     if (J.isHira(a) && !J.isHira(b) && !isBad(b)) s += 3;
     if (sb.has(c)) s += 2;
     if (isBad(b)) s -= 6;
@@ -186,7 +186,13 @@ function splitK(text, k, force) {
 /* single glyphs, with small kana / punctuation / ー kept on the preceding glyph */
 const charUnits = text => {
   const out = [];
-  for (const ch of strip(text)) { if (out.length && isBad(ch)) out[out.length - 1] += ch; else out.push(ch); }
+  let pending = '';
+  for (const ch of strip(text)) {
+    if (J.isOpenPunct && J.isOpenPunct(ch)) { pending += ch; continue; }
+    if (out.length && isBad(ch)) out[out.length - 1] += ch;
+    else { out.push(pending + ch); pending = ''; }
+  }
+  if (pending) { if (out.length) out[out.length - 1] += pending; else out.push(pending); }
   return out;
 };
 const brk = (text, maxPer) => {
@@ -226,7 +232,7 @@ function fitBlock(text, font, aw, ah, o = {}, maxLines = 4) {
 const rowW = (text, font, size) => { let w = 0; for (const ch of text) w += J.metrics.adv(font, ch) * size; return w; };
 /* one-call text row for dense secondary copy (main pass only); sp = extra px after each glyph */
 function fastRow(env, text, font, size, x, y, sp, color, alpha, align = 'left') {
-  if (env.pass !== 'main' || alpha <= 0.01 || !text) return;
+  if (env.pass !== 'main' || alpha <= 0.01 || !text || J.hideDecoText(env, text)) return;
   const ctx = env.ctx;
   if (!('letterSpacing' in ctx)) { env.draw({ text, font, size, x, y, align, track: sp / size, color, alpha, ghost: false }); return; }
   ctx.save();

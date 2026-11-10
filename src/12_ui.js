@@ -54,6 +54,11 @@ function mergeProject(p) {
     d.aspect = '9:16';
   }
   const o = Object.assign(d, p || {});
+  o.extra = true;
+  o.extra2 = true;
+  o.typo = true;
+  o.kinetic = true;
+  if (o.wa == null) o.wa = true;
   o.fx = Object.assign(J.defaultProject().fx, (p && p.fx) || {});
   o.timing = Object.assign(J.defaultProject().timing, (p && p.timing) || {});
   const en = J.defaultProject().enabled;
@@ -456,20 +461,42 @@ function pickRandom(arr) {
 const GENRE_PRESETS = {
   auto: {
     name: 'おまかせ',
-    hint: '全ジャンルからランダム',
-    apply: () => J.omakase(S.project)
+    hint: '全ジャンルからランダム（1,715種の演出）',
+    apply: () => {
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }));
+      r.horror = false;
+      return r;
+    }
+  },
+  lyricpv: {
+    name: '文字PV',
+    hint: 'ボカロ・歌ってみた風の本格タイポグラフィ演出',
+    apply: () => {
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'lyricpv');
+      r.horror = false;
+      return r;
+    }
+  },
+  kinetic: {
+    name: 'キネティック',
+    hint: 'ダイナミックに動くタイポグラフィ・幾何学演出',
+    apply: () => {
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'kinetic');
+      r.horror = false;
+      return r;
+    }
   },
   ballad: {
     name: 'バラード',
     hint: '明朝体 × 静かなフェード・ブラー演出',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = 'calm';
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'ballad');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
-        display: pickRandom(['shippori', 'mincho_black', 'tokumin']),
+        display: pickRandom(['shippori', 'mincho_black', 'tokumin', 'klee']),
         serif: 'mincho_bold'
       });
-      r.style = pickRandom(['paper', 'specimen', 'noir', 'mono']);
+      r.style = pickRandom(['paper', 'specimen', 'noir', 'mono', 'sunset', 'amber', 'cinema', 'sepia']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.25 + Math.random() * 0.15).toFixed(2),
         glitch: 0.05,
@@ -483,13 +510,13 @@ const GENRE_PRESETS = {
     name: 'ポップ',
     hint: 'ポップ体/丸文字 × 弾むバウンス・明るい演出',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = 'pop';
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'pop');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
-        display: pickRandom(['pop', 'round', 'kiwi']),
+        display: pickRandom(['pop', 'round', 'kiwi', 'rampart', 'potta']),
         serif: 'round'
       });
-      r.style = pickRandom(['magenta', 'caution', 'transit', 'blueprint', 'rouge']);
+      r.style = pickRandom(['magenta', 'caution', 'transit', 'blueprint', 'rouge', 'pastel', 'popart', 'acid']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.8 + Math.random() * 0.15).toFixed(2),
         glitch: 0.1,
@@ -502,13 +529,13 @@ const GENRE_PRESETS = {
     name: 'ロック',
     hint: '極太ゴシック × 迫力スライド・画面の揺れ',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = pickRandom(['emotional', 'graphic']);
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'rock');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
-        display: pickRandom(['dela', 'zenkaku', 'gothic_black']),
+        display: pickRandom(['dela', 'zenkaku', 'gothic_black', 'reggae']),
         serif: 'mincho_black'
       });
-      r.style = pickRandom(['crimson', 'noir', 'blueprint', 'caution']);
+      r.style = pickRandom(['crimson', 'noir', 'blueprint', 'caution', 'cinema', 'ink', 'acid']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.75 + Math.random() * 0.15).toFixed(2),
         glitch: 0.35,
@@ -521,13 +548,13 @@ const GENRE_PRESETS = {
     name: 'サイバー',
     hint: '等幅/ピクセル文字 × グリッチ・電子的スライス',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = 'glitch';
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'cyber');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
         display: pickRandom(['dot', 'mono']),
         serif: 'mono'
       });
-      r.style = pickRandom(['hud', 'mint', 'noir', 'crimson']);
+      r.style = pickRandom(['hud', 'mint', 'noir', 'crimson', 'terminal', 'acid', 'ocean']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.7 + Math.random() * 0.2).toFixed(2),
         glitch: 0.85,
@@ -540,13 +567,13 @@ const GENRE_PRESETS = {
     name: 'チル',
     hint: 'モダンゴシック × 洗練されたタイポグラフィ',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = 'editorial';
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'chill');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
-        display: pickRandom(['sansui', 'gothic_med']),
+        display: pickRandom(['sansui', 'gothic_med', 'klee']),
         serif: 'mincho'
       });
-      r.style = pickRandom(['specimen', 'mono', 'paper', 'noir']);
+      r.style = pickRandom(['specimen', 'mono', 'paper', 'noir', 'editorial', 'ocean', 'amber', 'sunset']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.35 + Math.random() * 0.15).toFixed(2),
         glitch: 0.1,
@@ -559,17 +586,27 @@ const GENRE_PRESETS = {
     name: '和風',
     hint: '筆文字風 × 縦書き・和の情緒的演出',
     apply: () => {
-      const r = J.omakase(S.project);
-      r.mood = pickRandom(['calm', 'emotional']);
+      const r = J.omakase(Object.assign({}, S.project, { horror: false, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'wa');
+      r.horror = false;
       r.fonts = Object.assign({}, r.fonts, {
-        display: pickRandom(['brush', 'tokumin', 'shippori']),
+        display: pickRandom(['brush', 'tokumin', 'shippori', 'reggae']),
         serif: 'brush'
       });
-      r.style = pickRandom(['paper', 'crimson', 'noir']);
+      r.style = pickRandom(['paper', 'crimson', 'noir', 'shrine', 'ink', 'sepia', 'amber']);
       r.fx = Object.assign({}, r.fx, {
         motion: +(0.4 + Math.random() * 0.2).toFixed(2),
         decor: 0.7
       });
+      return r;
+    }
+  },
+  horror: {
+    name: 'ホラー',
+    hint: '怪異・心霊・ノイズ・呪いの不穏な演出',
+    apply: () => {
+      const r = J.omakase(Object.assign({}, S.project, { horror: true, extra: true, extra2: true, typo: true, kinetic: true, wa: true }), Math.random, 'horror');
+      r.horror = true;
+      r.style = pickRandom(['hrRuin', 'hrNightRec', 'hrCurse', 'noir', 'crimson', 'mono']);
       return r;
     }
   }
